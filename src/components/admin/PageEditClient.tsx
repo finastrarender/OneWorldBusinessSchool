@@ -100,9 +100,34 @@ export default function PageEditClient({ slug }: { slug: string }) {
     };
   }
 
+  async function fetchWithFallback(
+    paths: string[],
+    init?: RequestInit,
+  ): Promise<{ res: Response; json: any }> {
+    let lastRes: Response | null = null;
+    let lastJson: any = null;
+
+    for (const path of paths) {
+      const res = await fetch(path, init);
+      const json = await parseJsonResponse(res);
+      if (res.status !== 404) {
+        return { res, json };
+      }
+      lastRes = res;
+      lastJson = json;
+    }
+
+    return {
+      res: lastRes ?? new Response(null, { status: 404 }),
+      json: lastJson ?? { error: { message: "HTTP 404: Not Found" } },
+    };
+  }
+
   const reload = useCallback(async () => {
-    const res = await fetch(`/api/v1/admin/pages/${slugPathSegment(slug)}`);
-    const json = await parseJsonResponse(res);
+    const { res, json } = await fetchWithFallback([
+      `/api/v1/admin/pages/${slugPathSegment(slug)}`,
+      `/api/admin/pages/${slugPathSegment(slug)}`,
+    ]);
     if (!res.ok) throw new Error(json?.error?.message ?? "Load failed");
     setPage(json.data);
   }, [slug]);
@@ -129,19 +154,24 @@ export default function PageEditClient({ slug }: { slug: string }) {
     setSectionSaveState(null);
     const fd = new FormData(e.currentTarget);
     const nextSlug = normalizeSlugForPath(String(fd.get("slug") ?? ""));
-    const res = await fetch(`/api/v1/admin/pages/${slugPathSegment(slug)}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        slug: nextSlug,
-        title: fd.get("title"),
-        seoTitle: fd.get("seoTitle") || undefined,
-        seoDescription: fd.get("seoDescription") || undefined,
-        ogImage: fd.get("ogImage") || undefined,
-        canonicalPath: fd.get("canonicalPath") || undefined,
-      }),
-    });
-    const json = await parseJsonResponse(res);
+    const { res, json } = await fetchWithFallback(
+      [
+        `/api/v1/admin/pages/${slugPathSegment(slug)}`,
+        `/api/admin/pages/${slugPathSegment(slug)}`,
+      ],
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          slug: nextSlug,
+          title: fd.get("title"),
+          seoTitle: fd.get("seoTitle") || undefined,
+          seoDescription: fd.get("seoDescription") || undefined,
+          ogImage: fd.get("ogImage") || undefined,
+          canonicalPath: fd.get("canonicalPath") || undefined,
+        }),
+      },
+    );
     if (!res.ok) {
       setMessage(json?.error?.message ?? "Save failed");
       return;
@@ -156,19 +186,27 @@ export default function PageEditClient({ slug }: { slug: string }) {
   async function saveSection(section: SectionRow, data: Record<string, unknown>) {
     const targetSlug = normalizeSlugForPath(page?.slug ?? slug);
     const patchSection = async (sectionId: string) =>
-      fetch(`/api/v1/admin/pages/${slugPathSegment(targetSlug)}/sections/${idPathSegment(sectionId)}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data, type: section.type, order: section.order }),
-      });
+      fetchWithFallback(
+        [
+          `/api/v1/admin/sections/${idPathSegment(sectionId)}`,
+          `/api/v1/admin/pages/${slugPathSegment(targetSlug)}/sections/${idPathSegment(sectionId)}`,
+          `/api/admin/pages/${slugPathSegment(targetSlug)}/sections/${idPathSegment(sectionId)}`,
+        ],
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ data, type: section.type, order: section.order }),
+        },
+      );
 
-    let res = await patchSection(section.id);
-    let json = await parseJsonResponse(res);
+    let { res, json } = await patchSection(section.id);
 
     if (!res.ok && res.status === 404) {
       await reload();
-      const latestRes = await fetch(`/api/v1/admin/pages/${slugPathSegment(targetSlug)}`);
-      const latestJson = await parseJsonResponse(latestRes);
+      const { res: latestRes, json: latestJson } = await fetchWithFallback([
+        `/api/v1/admin/pages/${slugPathSegment(targetSlug)}`,
+        `/api/admin/pages/${slugPathSegment(targetSlug)}`,
+      ]);
       const latestPage = latestJson?.data as { sections?: SectionRow[] } | undefined;
       const targetType = normalizeSectionType(section.type);
       const replacement = latestPage?.sections?.find(
@@ -177,8 +215,9 @@ export default function PageEditClient({ slug }: { slug: string }) {
           (s.order === section.order || s.id === section.id),
       );
       if (replacement) {
-        res = await patchSection(replacement.id);
-        json = await parseJsonResponse(res);
+        const retry = await patchSection(replacement.id);
+        res = retry.res;
+        json = retry.json;
       }
     }
 

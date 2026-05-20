@@ -56,10 +56,9 @@ export default function IncubationPageSection({ content }: { content: Incubation
             >
               {content.primaryAction.label}
             </a>
-          ) : null}
-          {content.secondaryAction ? (
+          ) : content.secondaryAction ? (
             <a
-              className="incubation-hero__action incubation-hero__action--secondary"
+              className="incubation-hero__action incubation-hero__action--primary"
               href={content.secondaryAction.href}
             >
               {content.secondaryAction.label}
@@ -175,3 +174,4 @@ export default function IncubationPageSection({ content }: { content: Incubation
     </section>
   );
 }
+
