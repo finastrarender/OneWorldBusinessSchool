@@ -5466,7 +5466,7 @@ button {
   gap: clamp(28px, 4vw, 64px);
   align-items: center;
   padding: clamp(56px, 8vw, 112px) clamp(16px, 4vw, 64px);
-  background: #f8fafc;
+  background: #ffffff;
 }
 
 .home-incubation-highlight__copy {

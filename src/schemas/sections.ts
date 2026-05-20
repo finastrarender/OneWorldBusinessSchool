@@ -47,6 +47,7 @@ export const introDataSchema = z.object({
 const serviceCardSchema = z.object({
   title: z.string(),
   description: z.string(),
+  icon: z.string().optional(),
   iconImage: z.string().optional(),
   category: z.string().optional(),
   points: z.array(z.string()).optional(),
@@ -101,6 +102,7 @@ const servicesGridCardSchema = z.object({
   description: z.string(),
   features: z.array(z.string()),
   cta: z.string(),
+  icon: z.string().optional(),
 });
 
 export const servicesGridDataSchema = z.object({
@@ -138,14 +140,14 @@ export const coursesCatalogDataSchema = z.object({
 });
 
 export const whyChooseItemSchema = z.object({
-  title:z.string(),
+  title: z.string(),
   // description: z.string().optional(),
   icon: z.string(),
 });
 
 export const whyChooseDataSchema = z.object({
-  title:z.string(),
-  subheading:z.string().optional(),
+  title: z.string(),
+  subheading: z.string().optional(),
   items: z.array(whyChooseItemSchema),
 });
 
@@ -190,7 +192,7 @@ const incubationApplicationFieldSchema = z.object({
   label: z.string(),
   placeholder: z.string(),
 });
- 
+
 export const incubationDataSchema = z.object({
   title: z.string(),
   description: z.string(),
@@ -223,7 +225,7 @@ const globalStandardsPillarSchema = z.object({
   title: z.string(),
   description: z.string(),
 });
- 
+
 export const globalStandardsDataSchema = z.object({
   title: z.string(),
   description: z.string(),
@@ -347,11 +349,11 @@ export const contactInquiryDataSchema = z.object({
   mapLabelTitle: z.string(),
   mapLabelSubtitle: z.string(),
 });
-export const serviceHeroDataSchema=z.object({
+export const serviceHeroDataSchema = z.object({
   title: z.array(z.string()).min(1),
   description: z.string(),
-  backgroundImage:z.string()
-})
+  backgroundImage: z.string(),
+});
 
 export const aboutHeroDataSchema = z.object({
   titleAccent: z.string(),
@@ -366,7 +368,7 @@ const aboutHeroData = {
   titleMain: "Generation of Global Leaders.",
   description:
     "One World Business School and Incubation Centre FZE is more than an institution; it's a launchpad for visionary entrepreneurs and industry disruptors in a rapidly evolving global economy.",
-  image: "/home/headquarters.png",  // use an existing image to verify layout works  // ✅ must be "image" not "backgroundImage"
+  image: "/home/headquarters.png", // use an existing image to verify layout works  // ✅ must be "image" not "backgroundImage"
 };
 
 const aboutOverviewStatSchema = z.object({
@@ -426,12 +428,12 @@ export const aboutValuesDataSchema = z.object({
   title: z.string(),
   items: z.array(aboutValueItemSchema).min(1),
 });
-export const aboutCtaDataSchema=z.object({
+export const aboutCtaDataSchema = z.object({
   title: z.array(z.string()).min(1),
   description: z.string(),
-  primaryAction: z.object({ label: z.string(),href: z.string()}),
-  secondaryAction: z.object({label:z.string(),href:z.string()})
-})
+  primaryAction: z.object({ label: z.string(), href: z.string() }),
+  secondaryAction: z.object({ label: z.string(), href: z.string() }),
+});
 
 const researchPillarSchema = z.object({
   icon: z.string(),
@@ -509,15 +511,15 @@ export function parseSectionData(type: string, data: unknown): unknown {
         ? "industriesGrid"
         : type === "industriescta"
           ? "industriesCta"
-        : type === "servicesgrid"
-          ? "servicesGrid"
-        : type === "servicesaccordion"
-          ? "servicesAccordion"
-        : type === "servicescta"
-          ? "servicesCTA"
-        : type === "aboutoverview"
-          ? "aboutOverview"
-        : type;
+          : type === "servicesgrid"
+            ? "servicesGrid"
+            : type === "servicesaccordion"
+              ? "servicesAccordion"
+              : type === "servicescta"
+                ? "servicesCTA"
+                : type === "aboutoverview"
+                  ? "aboutOverview"
+                  : type;
   if (!SECTION_TYPES.includes(normalizedType as SectionType)) {
     throw new Error(`Unknown section type: ${type}`);
   }
@@ -530,14 +532,20 @@ export function parseSectionData(type: string, data: unknown): unknown {
 
 export const siteGlobalPayloadSchema = z.object({
   navItems: z.array(navItemSchema),
-  footerColumns: z.array(z.union([footerLinkColumnSchema, footerContactColumnSchema])),
+  footerColumns: z.array(
+    z.union([footerLinkColumnSchema, footerContactColumnSchema]),
+  ),
   footerMeta: z.object({
     brand: z.string(),
     description: z.string(),
     social: z.array(
       z.union([
         z.string(),
-        z.object({ label: z.string(), href: z.string(), icon: z.string().optional() }),
+        z.object({
+          label: z.string(),
+          href: z.string(),
+          icon: z.string().optional(),
+        }),
       ]),
     ),
     copyright: z.string(),
