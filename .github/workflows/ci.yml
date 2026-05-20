@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      SKIP_ENV_VALIDATION: "1"
+      MONGODB_URI: mongodb://127.0.0.1:27017/ci
+      AUTH_SECRET: ci-build-secret-minimum-32-characters-long
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: pnpm
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.27.0
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm build

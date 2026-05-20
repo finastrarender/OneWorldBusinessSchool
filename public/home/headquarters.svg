@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800" role="img" aria-label="Headquarters placeholder">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#eff4fa"/>
+      <stop offset="1" stop-color="#ffffff"/>
+    </linearGradient>
+    <linearGradient id="bld" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#0b3d91" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#0a1f44" stop-opacity="0.95"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <rect x="120" y="160" width="360" height="520" rx="22" fill="url(#bld)"/>
+  <rect x="520" y="110" width="260" height="570" rx="22" fill="#0f172a" opacity="0.9"/>
+  <rect x="820" y="210" width="260" height="470" rx="22" fill="url(#bld)" opacity="0.92"/>
+  <g fill="#ffffff" opacity="0.6">
+    <rect x="160" y="210" width="70" height="50" rx="8"/>
+    <rect x="250" y="210" width="70" height="50" rx="8"/>
+    <rect x="340" y="210" width="70" height="50" rx="8"/>
+    <rect x="160" y="290" width="70" height="50" rx="8"/>
+    <rect x="250" y="290" width="70" height="50" rx="8"/>
+    <rect x="340" y="290" width="70" height="50" rx="8"/>
+    <rect x="160" y="370" width="70" height="50" rx="8"/>
+    <rect x="250" y="370" width="70" height="50" rx="8"/>
+    <rect x="340" y="370" width="70" height="50" rx="8"/>
+  </g>
+  <path d="M120 690h960" stroke="#c8a96a" stroke-width="6" stroke-linecap="round" opacity="0.7"/>
+  <text x="120" y="120" font-family="Montserrat, Arial, sans-serif" font-size="40" fill="#0b3d91" opacity="0.9">
+    Headquarters
+  </text>
+</svg>
+

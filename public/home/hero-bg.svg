@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-label="Hero background">
+  <defs>
+    <radialGradient id="r" cx="30%" cy="30%" r="80%">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.22"/>
+      <stop offset="0.35" stop-color="#c8a96a" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#0b3d91" stop-opacity="0.0"/>
+    </radialGradient>
+    <linearGradient id="l" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#0a1f44"/>
+      <stop offset="0.55" stop-color="#0b3d91"/>
+      <stop offset="1" stop-color="#0f172a"/>
+    </linearGradient>
+    <filter id="grain">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.07  0 0 0 0 0.12  0 0 0 0 0.2  0 0 0 0.16 0"/>
+    </filter>
+  </defs>
+  <rect width="1600" height="900" fill="url(#l)"/>
+  <rect width="1600" height="900" filter="url(#grain)" opacity="0.55"/>
+  <circle cx="520" cy="260" r="520" fill="url(#r)"/>
+  <path d="M0 650C240 560 360 720 590 650s420-230 760-170 250 310 250 310V900H0z" fill="#c8a96a" opacity="0.08"/>
+  <path d="M0 720c250-120 430 60 720-10s430-260 880-110v300H0z" fill="#ffffff" opacity="0.04"/>
+</svg>
+
