@@ -3927,7 +3927,8 @@ button {
   position: relative;
   z-index: 1;
   width: min(940px, 100%);
-  max-height: min(90vh, 920px);
+  /* Keep the modal fully inside the viewport on shorter laptop screens. */
+  max-height: calc(100dvh - 40px);
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -4909,6 +4910,28 @@ button {
   .site-footer__meta {
     flex-direction: column;
     align-items: flex-start;
+  }
+}
+
+@media (max-height: 820px) {
+  .apply-now-panel {
+    padding: 26px 22px 18px;
+  }
+
+  .apply-now-panel h1 {
+    font-size: 1.7rem;
+  }
+
+  .apply-now-form-wrap {
+    padding: 28px 32px;
+  }
+
+  .apply-now-form-wrap h2 {
+    font-size: 1.65rem;
+  }
+
+  .apply-now-form textarea {
+    min-height: 70px;
   }
 }
 
