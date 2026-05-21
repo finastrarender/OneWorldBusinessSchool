@@ -4806,6 +4806,13 @@ button {
       "card";
   }
 
+  .incubation-roadmap__row:nth-child(even) {
+    grid-template-areas:
+      "index"
+      "image"
+      "card";
+  }
+
   .incubation-roadmap__row:nth-child(even) .incubation-roadmap__card,
   .incubation-roadmap__row:nth-child(even) .incubation-roadmap__image-wrap {
     order: initial;
@@ -4814,6 +4821,11 @@ button {
   .incubation-roadmap__index {
     margin: 0;
     justify-self: start;
+  }
+
+  .incubation-roadmap__image-wrap {
+    width: 100%;
+    min-height: 180px;
   }
 
   .incubation-portfolio__header {
@@ -5122,6 +5134,19 @@ button {
   .incubation-roadmap__card-title {
     font-size: 1.25rem;
     line-height: 1.35;
+  }
+
+  .incubation-application__form {
+    padding: 18px 14px;
+  }
+
+  .incubation-application__field input {
+    min-height: 44px;
+  }
+
+  .incubation-application__submit {
+    width: 100%;
+    min-height: 46px;
   }
 }
 

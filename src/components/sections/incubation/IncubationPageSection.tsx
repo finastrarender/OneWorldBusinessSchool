@@ -158,11 +158,11 @@ export default function IncubationPageSection({ content }: { content: Incubation
                 className={`incubation-application__field ${index < 2 ? "incubation-application__field--half" : ""}`}
               >
                 <span>{field.label}</span>
-                <input suppressHydrationWarning type="text" placeholder={field.placeholder} />
+                <input type="text" placeholder={field.placeholder} />
               </label>
             ))}
           </div>
-          <button suppressHydrationWarning type="submit" className="incubation-application__submit">
+          <button type="submit" className="incubation-application__submit">
             {content.applicationSubmitLabel ?? "Submit Application"}
           </button>
           <p className="incubation-application__note">
