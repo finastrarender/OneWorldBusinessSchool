@@ -5136,7 +5136,12 @@ button {
     line-height: 1.35;
   }
 
+  .incubation-application {
+    padding: 3rem 1.25rem;
+  }
+
   .incubation-application__form {
+    margin: 0.75rem 0.5rem 0;
     padding: 18px 14px;
   }
 
