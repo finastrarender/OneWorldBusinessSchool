@@ -3912,6 +3912,7 @@ button {
   align-items: center;
   justify-content: center;
   padding: 20px;
+  overflow-x: hidden;
 }
 
 .apply-now-modal__backdrop {
@@ -3926,13 +3927,14 @@ button {
   z-index: 1;
   width: min(940px, 100%);
   max-height: min(90vh, 920px);
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .apply-now-modal__close {
   position: absolute;
-  top: -10px;
-  right: -10px;
+  top: 10px;
+  right: 10px;
   width: 32px;
   height: 32px;
   border: 0;
@@ -4986,6 +4988,7 @@ button {
     align-items: flex-start;
     padding: 12px;
     overflow-y: auto;
+    overflow-x: hidden;
   }
 
   .apply-now-modal__content {
