@@ -3912,6 +3912,7 @@ button {
   align-items: center;
   justify-content: center;
   padding: 20px;
+  box-sizing: border-box;
   overflow-x: hidden;
 }
 
@@ -4987,6 +4988,7 @@ button {
   .apply-now-modal {
     align-items: flex-start;
     padding: 12px;
+    box-sizing: border-box;
     overflow-y: auto;
     overflow-x: hidden;
   }
