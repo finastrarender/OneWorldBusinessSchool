@@ -1,7 +1,20 @@
 "use client";
-
+ 
 import { useState } from "react";
+import { z } from "zod";
 
+const enrollmentSchema = z.object({
+  fullName: z.string().min(2, "Full name must be at least 2 characters"),
+  email: z.string().email("Please enter a valid email address"),
+  phone: z.string().min(5, "Please enter a valid phone number").optional().or(z.literal("")),
+  city: z.string().min(1, "Please select a city"),
+  experience: z.string().min(1, "Please select your experience level"),
+  message: z.string().optional(),
+  acceptedTerms: z.boolean().refine((v) => v === true, {
+    message: "You must accept the terms and conditions",
+  }),
+});
+ 
 export type ApplyNowModalContent = {
   panelTitle: string;
   panelDescription: string;
@@ -31,35 +44,55 @@ export type ApplyNowModalContent = {
   marketingConsentText: string;
   submitLabel: string;
 };
-
+ 
 export default function ApplyNowCard({ content }: { content: ApplyNowModalContent }) {
   const [status, setStatus] = useState<"idle" | "loading" | "ok" | "err">("idle");
   const [message, setMessage] = useState("");
-
+  const [errors, setErrors] = useState<Record<string, string>>({});
+ 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setStatus("loading");
     setMessage("");
-
+    setErrors({});
+ 
     const form = e.currentTarget;
     const fd = new FormData(form);
-    const customFields = content.customFields.map((field, index) => ({
-      label: field.label,
-      value: String(fd.get(`custom-${index}`) ?? ""),
-    }));
 
-    const body = {
+    const formData = {
       fullName: String(fd.get("fullName") ?? ""),
       phone: String(fd.get("phone") ?? ""),
       email: String(fd.get("email") ?? ""),
       city: String(fd.get("city") ?? ""),
       experience: String(fd.get("experience") ?? ""),
       message: String(fd.get("message") ?? ""),
-      customFields,
       acceptedTerms: fd.get("acceptedTerms") === "on",
-      marketingConsent: fd.get("marketingConsent") === "on",
     };
 
+    const validation = enrollmentSchema.safeParse(formData);
+    if (!validation.success) {
+      const newErrors: Record<string, string> = {};
+      validation.error.issues.forEach((err) => {
+        if (err.path[0]) {
+          newErrors[err.path[0].toString()] = err.message;
+        }
+      });
+      setErrors(newErrors);
+      setStatus("idle");
+      return;
+    }
+
+    const customFields = content.customFields.map((field, index) => ({
+      label: field.label,
+      value: String(fd.get(`custom-${index}`) ?? ""),
+    }));
+ 
+    const body = {
+      ...formData,
+      customFields,
+      marketingConsent: fd.get("marketingConsent") === "on",
+    };
+ 
     try {
       const res = await fetch("/api/v1/enroll-now", {
         method: "POST",
@@ -80,7 +113,7 @@ export default function ApplyNowCard({ content }: { content: ApplyNowModalConten
       setMessage("Network error");
     }
   }
-
+ 
   return (
     <div className="apply-now-card">
       <aside className="apply-now-panel">
@@ -92,32 +125,50 @@ export default function ApplyNowCard({ content }: { content: ApplyNowModalConten
           ))}
         </ul>
       </aside>
-
+ 
       <div className="apply-now-form-wrap">
         <h2>{content.formTitle}</h2>
         <p>{content.formDescription}</p>
-
-        <form className="apply-now-form" onSubmit={onSubmit}>
+ 
+        <form className="apply-now-form" onSubmit={onSubmit} noValidate>
           <label>
             <span>{content.fullNameLabel}</span>
-            <input name="fullName" type="text" placeholder={content.fullNamePlaceholder} required />
+            <input 
+              name="fullName" 
+              type="text" 
+              placeholder={content.fullNamePlaceholder} 
+              className={errors.fullName ? "input-invalid" : ""}
+            />
+            {errors.fullName && <span className="field-error">{errors.fullName}</span>}
           </label>
-
+ 
           <div className="apply-now-form__row">
             <label>
               <span>{content.phoneLabel}</span>
-              <input name="phone" type="text" placeholder={content.phonePlaceholder} />
+              <input 
+                name="phone" 
+                type="text" 
+                placeholder={content.phonePlaceholder} 
+                className={errors.phone ? "input-invalid" : ""}
+              />
+              {errors.phone && <span className="field-error">{errors.phone}</span>}
             </label>
             <label>
               <span>{content.emailLabel}</span>
-              <input name="email" type="email" placeholder={content.emailPlaceholder} required />
+              <input 
+                name="email" 
+                type="email" 
+                placeholder={content.emailPlaceholder} 
+                className={errors.email ? "input-invalid" : ""}
+              />
+              {errors.email && <span className="field-error">{errors.email}</span>}
             </label>
           </div>
-
+ 
           <div className="apply-now-form__row">
             <label>
               <span>{content.cityLabel}</span>
-              <select name="city" defaultValue="">
+              <select name="city" defaultValue="" className={errors.city ? "input-invalid" : ""}>
                 <option value="" disabled>
                   {content.cityPlaceholder}
                 </option>
@@ -125,10 +176,11 @@ export default function ApplyNowCard({ content }: { content: ApplyNowModalConten
                   <option key={option}>{option}</option>
                 ))}
               </select>
+              {errors.city && <span className="field-error">{errors.city}</span>}
             </label>
             <label>
               <span>{content.experienceLabel}</span>
-              <select name="experience" defaultValue="">
+              <select name="experience" defaultValue="" className={errors.experience ? "input-invalid" : ""}>
                 <option value="" disabled>
                   {content.experiencePlaceholder}
                 </option>
@@ -136,9 +188,10 @@ export default function ApplyNowCard({ content }: { content: ApplyNowModalConten
                   <option key={option}>{option}</option>
                 ))}
               </select>
+              {errors.experience && <span className="field-error">{errors.experience}</span>}
             </label>
           </div>
-
+ 
           <label>
             <span>{content.messageLabel}</span>
             <textarea name="message" rows={4} placeholder={content.messagePlaceholder} />
@@ -149,16 +202,18 @@ export default function ApplyNowCard({ content }: { content: ApplyNowModalConten
               <input name={`custom-${index}`} type={field.inputType} placeholder={field.placeholder} />
             </label>
           ))}
-
+ 
           <label className="apply-now-form__check">
             <input name="acceptedTerms" type="checkbox" />
             <span>{content.termsText}</span>
           </label>
+          {errors.acceptedTerms && <span className="field-error">{errors.acceptedTerms}</span>}
+
           <label className="apply-now-form__check">
             <input name="marketingConsent" type="checkbox" />
             <span>{content.marketingConsentText}</span>
           </label>
-
+ 
           <button type="submit" disabled={status === "loading"}>
             {status === "loading" ? "Submitting..." : content.submitLabel}
           </button>

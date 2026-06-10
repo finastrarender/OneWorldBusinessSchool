@@ -127,14 +127,21 @@ export default function SiteFooter({
               </ul>
             ) : (
               <ul className="site-footer__list site-footer__list--contact">
-                {column.contact.map((item) => (
-                  <li
-                    key={item.value}
-                    className="site-footer__contact-item"
-                  >
-                    <span>{item.value}</span>
-                  </li>
-                ))}
+                {column.contact.map((item) => {
+                  const isEmail = item.type === "mail";
+                  const isPhone = item.type === "phone";
+                  const href = isEmail ? `mailto:${item.value}` : isPhone ? `tel:${item.value.replace(/[^0-9+]/g, "")}` : null;
+                  
+                  return (
+                    <li key={item.value} className="site-footer__contact-item">
+                      {href ? (
+                        <a href={href} className="contact-link">{item.value}</a>
+                      ) : (
+                        <span>{item.value}</span>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </div>

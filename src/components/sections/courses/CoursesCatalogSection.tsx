@@ -138,71 +138,94 @@ export default function CoursesCatalogSection({ content }: { content: CoursesCat
           </aside>
 
           <div className="courses-grid">
-            {pageCourses.map((course) => (
-              <article key={course.title} className="course-card">
-                <div className="course-card__media">
-                  <img
-                    src={resolveCourseImage(course as unknown as Record<string, unknown>)}
-                    alt={course.title}
-                    className="course-card__image"
-                  />
-                  <span className="course-card__badge">{course.badge}</span>
-                </div>
-                <div className="course-card__body">
-                  <h3 className="course-card__title">{course.title}</h3>
-                  <p className="course-card__description">{course.description}</p>
-                  <p className="course-card__skills-label">KEY SKILLS:</p>
-                  <div className="course-card__skills">
-                    {course.skills.map((skill) => (
-                      <span key={skill}>{skill}</span>
-                    ))}
-                  </div>
-                  <div className="course-card__meta">
-                    <span className="course-card__weeks">
-                      <svg
-                        className="course-card__weeks-icon"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        aria-hidden="true"
-                      >
-                        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
-                        <path d="M12 7.5V12L15.5 14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-                      </svg>
-                      {course.weeks}
-                    </span>
-                    <a href="?apply=1">Enroll Now -&gt;</a>
-                  </div>
-                </div>
-              </article>
-            ))}
-
-            <div className="courses-pagination">
-              <button
-                type="button"
-                disabled={safePage === 1}
-                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-              >
-                Previous
-              </button>
-              {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
-                <button
-                  key={page}
-                  type="button"
-                  className={safePage === page ? "is-active" : ""}
-                  onClick={() => setCurrentPage(page)}
+            {filteredCourses.length === 0 ? (
+              <div className="courses-catalog__empty">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
                 >
-                  {page}
-                </button>
-              ))}
-              <button
-                type="button"
-                disabled={safePage === totalPages}
-                onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-              >
-                Next
-              </button>
-            </div>
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                <p>No courses found matching your criteria. Try adjusting your filters.</p>
+              </div>
+            ) : (
+              <>
+                {pageCourses.map((course) => (
+                  <article key={course.title} className="course-card">
+                    <div className="course-card__media">
+                      <img
+                        src={resolveCourseImage(course as unknown as Record<string, unknown>)}
+                        alt={course.title}
+                        className="course-card__image"
+                      />
+                      <span className="course-card__badge">{course.badge}</span>
+                    </div>
+                    <div className="course-card__body">
+                      <h3 className="course-card__title">{course.title}</h3>
+                      <p className="course-card__description">{course.description}</p>
+                      <p className="course-card__skills-label">KEY SKILLS:</p>
+                      <div className="course-card__skills">
+                        {course.skills.map((skill) => (
+                          <span key={skill}>{skill}</span>
+                        ))}
+                      </div>
+                      <div className="course-card__meta">
+                        <span className="course-card__weeks">
+                          <svg
+                            className="course-card__weeks-icon"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                            aria-hidden="true"
+                          >
+                            <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+                            <path d="M12 7.5V12L15.5 14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                          </svg>
+                          {course.weeks}
+                        </span>
+                        <a href="?apply=1">Enroll Now -&gt;</a>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+
+                {totalPages > 1 && (
+                  <div className="courses-pagination">
+                    <button
+                      type="button"
+                      disabled={safePage === 1}
+                      onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                    >
+                      Previous
+                    </button>
+                    {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                      <button
+                        key={page}
+                        type="button"
+                        className={safePage === page ? "is-active" : ""}
+                        onClick={() => setCurrentPage(page)}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      disabled={safePage === totalPages}
+                      onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
       </div>

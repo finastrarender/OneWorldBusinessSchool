@@ -1,15 +1,26 @@
 "use client";
-
+ 
 import React, { useState } from "react";
-import type { z } from "zod";
+import { z } from "zod";
 import type { contactInquiryDataSchema } from "@/schemas/sections";
 import SimpleIcon from "../SimpleIcon";
-
+ 
 type ContactInquiryContent = z.infer<typeof contactInquiryDataSchema>;
+ 
+const contactFormSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Please enter a valid email address"),
+  phone: z.string().min(5, "Please enter a valid phone number").optional().or(z.literal("")),
+  company: z.string().optional(),
+  inquiryType: z.string().min(1, "Please select an inquiry type"),
+  message: z.string().min(10, "Message must be at least 10 characters"),
+});
 
 export default function ContactInquirySection({ content }: { content: ContactInquiryContent }) {
   const [status, setStatus] = useState<"idle" | "loading" | "ok" | "err">("idle");
   const [message, setMessage] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
   const officeAddress =
     content.officeItems.find((item) => item.icon === "location")?.lines.join(", ") ??
     content.officeItems[0]?.lines.join(", ") ??
@@ -27,13 +38,16 @@ export default function ContactInquirySection({ content }: { content: ContactInq
           email: item.lines[1] ?? "",
         }));
   const formFields = content.formFields ?? {};
-
+ 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setStatus("loading");
+    setMessage("");
+    setErrors({});
+
     const form = e.currentTarget;
     const fd = new FormData(form);
-    const body = {
+    const formData = {
       name: String(fd.get("name") ?? ""),
       email: String(fd.get("email") ?? ""),
       phone: String(fd.get("phone") ?? ""),
@@ -41,11 +55,25 @@ export default function ContactInquirySection({ content }: { content: ContactInq
       inquiryType: String(fd.get("inquiryType") ?? ""),
       message: String(fd.get("message") ?? ""),
     };
+
+    const validation = contactFormSchema.safeParse(formData);
+    if (!validation.success) {
+      const newErrors: Record<string, string> = {};
+      validation.error.issues.forEach((err) => {
+        if (err.path[0]) {
+          newErrors[err.path[0].toString()] = err.message;
+        }
+      });
+      setErrors(newErrors);
+      setStatus("idle");
+      return;
+    }
+
     try {
       const res = await fetch("/api/v1/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify(formData),
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -61,13 +89,13 @@ export default function ContactInquirySection({ content }: { content: ContactInq
       setMessage(formFields.errorMessage ?? "Network error");
     }
   }
-
+ 
   return (
     <section className="contact-inquiry">
       <div className="section-shell contact-inquiry__grid">
         <div className="contact-inquiry__details">
           <h2 className="contact-inquiry__office-title">{content.officeHeading}</h2>
-
+ 
           <div className="contact-inquiry__details-list">
             {content.officeItems.map((item) => (
               <article key={item.title} className="contact-inquiry__detail-item">
@@ -83,7 +111,7 @@ export default function ContactInquirySection({ content }: { content: ContactInq
               </article>
             ))}
           </div>
-
+ 
           <div className="contact-inquiry__departments">
             <h3>{formFields.departmentHeading ?? "Departmental Contacts"}</h3>
             <div className="contact-inquiry__departments-grid">
@@ -96,7 +124,7 @@ export default function ContactInquirySection({ content }: { content: ContactInq
               ))}
             </div>
           </div>
-
+ 
           <div className="contact-inquiry__map">
             <iframe
               title="Office location map"
@@ -107,14 +135,14 @@ export default function ContactInquirySection({ content }: { content: ContactInq
             />
           </div>
         </div>
-
+ 
         <div className="contact-inquiry__card">
           <h2 className="contact-inquiry__form-title">{content.formTitle}</h2>
           {content.formDescription ? (
             <p className="contact-inquiry__form-description">{content.formDescription}</p>
           ) : null}
-
-          <form className="contact-inquiry__form" onSubmit={onSubmit}>
+ 
+          <form className="contact-inquiry__form" onSubmit={onSubmit} noValidate>
             <div className="contact-inquiry__row">
               <label className="contact-inquiry__field">
                 <span>{formFields.fullNameLabel ?? "Full Name"}</span>
@@ -122,9 +150,9 @@ export default function ContactInquirySection({ content }: { content: ContactInq
                   suppressHydrationWarning
                   name="name"
                   type="text"
-                  required
-                  className="contact-inquiry__input"
+                  className={`contact-inquiry__input${errors.name ? " input-invalid" : ""}`}
                 />
+                {errors.name && <span className="field-error">{errors.name}</span>}
               </label>
               <label className="contact-inquiry__field">
                 <span>{formFields.companyLabel ?? "Organization / Company"}</span>
@@ -136,7 +164,7 @@ export default function ContactInquirySection({ content }: { content: ContactInq
                 />
               </label>
             </div>
-
+ 
             <div className="contact-inquiry__row">
               <label className="contact-inquiry__field">
                 <span>{formFields.workEmailLabel ?? "Work Email"}</span>
@@ -144,9 +172,9 @@ export default function ContactInquirySection({ content }: { content: ContactInq
                   suppressHydrationWarning
                   name="email"
                   type="email"
-                  required
-                  className="contact-inquiry__input"
+                  className={`contact-inquiry__input${errors.email ? " input-invalid" : ""}`}
                 />
+                {errors.email && <span className="field-error">{errors.email}</span>}
               </label>
               <label className="contact-inquiry__field">
                 <span>{formFields.phoneLabel ?? "Phone Number"}</span>
@@ -154,19 +182,19 @@ export default function ContactInquirySection({ content }: { content: ContactInq
                   suppressHydrationWarning
                   name="phone"
                   type="text"
-                  className="contact-inquiry__input"
+                  className={`contact-inquiry__input${errors.phone ? " input-invalid" : ""}`}
                   placeholder={formFields.phonePlaceholder ?? "+971"}
                 />
+                {errors.phone && <span className="field-error">{errors.phone}</span>}
               </label>
             </div>
-
+ 
             <label className="contact-inquiry__field">
               <span>{formFields.interestLabel ?? "Primary Interest"}</span>
               <select
                 suppressHydrationWarning
                 name="inquiryType"
-                required
-                className="contact-inquiry__input contact-inquiry__select"
+                className={`contact-inquiry__input contact-inquiry__select${errors.inquiryType ? " input-invalid" : ""}`}
               >
                 <option value="">{formFields.interestPlaceholder ?? "Select a service"}</option>
                 {content.inquiryOptions.map((option) => (
@@ -175,19 +203,20 @@ export default function ContactInquirySection({ content }: { content: ContactInq
                   </option>
                 ))}
               </select>
+              {errors.inquiryType && <span className="field-error">{errors.inquiryType}</span>}
             </label>
             <label className="contact-inquiry__field">
               <span>{formFields.messageLabel ?? "Your Message"}</span>
               <textarea
                 suppressHydrationWarning
                 name="message"
-                required
                 rows={5}
-                className="contact-inquiry__input contact-inquiry__textarea"
+                className={`contact-inquiry__input contact-inquiry__textarea${errors.message ? " input-invalid" : ""}`}
                 placeholder={formFields.messagePlaceholder ?? "How can we help you?"}
               />
+              {errors.message && <span className="field-error">{errors.message}</span>}
             </label>
-
+ 
             <button
               suppressHydrationWarning
               type="submit"
@@ -200,7 +229,7 @@ export default function ContactInquirySection({ content }: { content: ContactInq
               {formFields.disclaimerText ??
                 "By submitting this form, you agree to our privacy policy and data handling terms."}
             </p>
-
+ 
             {message ? (
               <p className={status === "ok" ? "contact-form__ok" : "contact-form__err"}>{message}</p>
             ) : null}

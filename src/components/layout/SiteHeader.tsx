@@ -55,6 +55,14 @@ export default function SiteHeader({
           <span className="visually-hidden">Toggle navigation</span>
         </button>
 
+        {isMenuOpen && (
+          <div 
+            className="site-header__overlay" 
+            onClick={() => setIsMenuOpen(false)}
+            aria-hidden="true"
+          />
+        )}
+
         <nav
           className={`site-nav${isMenuOpen ? " is-open" : ""}`}
           id="site-navigation"
@@ -71,7 +79,6 @@ export default function SiteHeader({
                 onClick={() => setIsMenuOpen(false)}
               >
                 {item.label}
-                {active && (<span className="underline"></span>)}
               </Link>
             );
           })}

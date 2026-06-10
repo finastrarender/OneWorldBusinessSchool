@@ -318,7 +318,7 @@ export default function SiteGlobalEditClient() {
       </nav>
       <div className="admin-card">
         <h1 style={{ marginTop: 0 }}>Site global</h1>
-        <p className="admin-muted">Navigation, footer, logo, and feature flags.</p>
+        <p className="admin-muted">Manage the website navigation (header navlinks) and footer content.</p>
         <form className="admin-form" onSubmit={onSave}>
           <h2>Navigation</h2>
           <p className="admin-muted" style={{ marginTop: 0 }}>
@@ -375,13 +375,6 @@ export default function SiteGlobalEditClient() {
           >
             Add nav item
           </button>
-          <h2>Logo</h2>
-          <ImageUploadField
-            label="Logo URL"
-            value={logoSrc}
-            onChange={setLogoSrc}
-            folder="site-global/logo"
-          />
           <h2>Footer columns</h2>
           <p className="admin-muted" style={{ marginTop: 0 }}>
             Build footer columns with forms instead of editing JSON directly.
@@ -559,52 +552,6 @@ export default function SiteGlobalEditClient() {
             Copyright
             <input value={copyright} onChange={(e) => setCopyright(e.target.value)} />
           </label>
-          <div style={{ display: "grid", gap: 10 }}>
-            <h3 style={{ margin: "0 0 4px" }}>Social links</h3>
-            <p className="admin-muted" style={{ margin: 0 }}>
-              Add multiple social links and choose an icon for each one.
-            </p>
-            {socialLinks.map((item, index) => (
-              <div
-                key={`${item.label}-${index}`}
-                style={{
-                  display: "grid",
-                  gap: 8,
-                  padding: 12,
-                  border: "1px solid #e2e8f0",
-                  borderRadius: 10,
-                }}
-              >
-                <label>
-                  Icon
-                  <IconPicker
-                    value={item.icon ?? "globe"}
-                    onChange={(val) => updateSocialLink(index, "icon", val)}
-                  />
-                </label>
-                <input
-                  value={item.label}
-                  onChange={(e) => updateSocialLink(index, "label", e.target.value)}
-                  placeholder="Instagram"
-                />
-                <input
-                  value={item.href}
-                  onChange={(e) => updateSocialLink(index, "href", e.target.value)}
-                  placeholder="https://instagram.com/yourpage"
-                />
-                <button
-                  type="button"
-                  className="admin-button-secondary"
-                  onClick={() => removeSocialLink(index)}
-                >
-                  Remove social link
-                </button>
-              </div>
-            ))}
-            <button type="button" className="admin-button-secondary" onClick={addSocialLink}>
-              Add social link
-            </button>
-          </div>
           <label>
             Legal links (one per line: label|href)
             <textarea
@@ -613,15 +560,6 @@ export default function SiteGlobalEditClient() {
               onChange={(e) => setLegalLinks(e.target.value)}
               placeholder="Privacy Policy|/privacy"
             />
-          </label>
-          <h2>Feature flags</h2>
-          <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <input
-              type="checkbox"
-              checked={clientLogosFlag}
-              onChange={(e) => setClientLogosFlag(e.target.checked)}
-            />
-            Show client logos section (when present on a page)
           </label>
           <button type="submit" disabled={saving}>
             {saving ? "Saving…" : "Save"}
