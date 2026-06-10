@@ -22,6 +22,9 @@ export default async function AdminDashboardPage() {
           <Link href="/">View site</Link>
           <Link href="/admin/site-global">Site global</Link>
           <Link href="/admin/apply-now">Apply now modal</Link>
+          <Link href="/admin/incubation">Incubation</Link>
+          <Link href="/admin/contact">Contact</Link>
+          <Link href="/admin/enroll-now">Enroll now</Link>
           <LogoutButton />
         </div>
       </nav>
@@ -85,6 +88,15 @@ export default async function AdminDashboardPage() {
             </Link>
             <Link href="/admin/apply-now" className="admin-button-secondary">
               Edit Apply Now modal
+            </Link>
+            <Link href="/admin/incubation" className="admin-button-secondary">
+              View incubation applications
+            </Link>
+            <Link href="/admin/contact" className="admin-button-secondary">
+              View contact inquiries
+            </Link>
+            <Link href="/admin/enroll-now" className="admin-button-secondary">
+              View enroll now submissions
             </Link>
             <Link href="/" className="admin-button-secondary">
               Open public website

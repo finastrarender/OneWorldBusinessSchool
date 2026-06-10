@@ -1,9 +1,14 @@
+"use client";
+
+import { useState } from "react";
 import type { z } from "zod";
 import type { incubationDataSchema } from "@/schemas/sections";
 
 type IncubationContent = z.infer<typeof incubationDataSchema>;
 
 export default function IncubationPageSection({ content }: { content: IncubationContent }) {
+  const [status, setStatus] = useState<"idle" | "loading" | "ok" | "err">("idle");
+  const [message, setMessage] = useState("");
   const heroTitleLines =
     content.heroTitleLines && content.heroTitleLines.length > 0
       ? content.heroTitleLines
@@ -35,6 +40,39 @@ export default function IncubationPageSection({ content }: { content: Incubation
             placeholder: "https://dropbox.com/your-pitch-deck",
           },
         ];
+
+  async function onApplicationSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setStatus("loading");
+    setMessage("");
+
+    const form = e.currentTarget;
+    const fd = new FormData(form);
+    const fields = applicationFields.map((field, index) => ({
+      label: field.label,
+      value: String(fd.get(`field-${index}`) ?? ""),
+    }));
+
+    try {
+      const res = await fetch("/api/v1/incubation-applications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fields }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setStatus("err");
+        setMessage(json?.error?.message ?? "Something went wrong");
+        return;
+      }
+      setStatus("ok");
+      setMessage("Thank you - your application has been submitted.");
+      form.reset();
+    } catch {
+      setStatus("err");
+      setMessage("Network error");
+    }
+  }
 
   return (
     <section className="incubation-section section-shell">
@@ -150,7 +188,7 @@ export default function IncubationPageSection({ content }: { content: Incubation
               "We are looking for bold founders solving hard problems. Our next cohort application window is now open. Apply today and get access to the ecosystem you need to win."}
           </p>
         </div>
-        <form className="incubation-application__form">
+        <form className="incubation-application__form" onSubmit={onApplicationSubmit}>
           <div className="incubation-application__grid">
             {applicationFields.map((field, index) => (
               <label
@@ -158,17 +196,28 @@ export default function IncubationPageSection({ content }: { content: Incubation
                 className={`incubation-application__field ${index < 2 ? "incubation-application__field--half" : ""}`}
               >
                 <span>{field.label}</span>
-                <input type="text" placeholder={field.placeholder} />
+                <input name={`field-${index}`} type="text" placeholder={field.placeholder} />
               </label>
             ))}
           </div>
-          <button type="submit" className="incubation-application__submit">
-            {content.applicationSubmitLabel ?? "Submit Application"}
+          <button
+            type="submit"
+            className="incubation-application__submit"
+            disabled={status === "loading"}
+          >
+            {status === "loading"
+              ? "Submitting..."
+              : content.applicationSubmitLabel ?? "Submit Application"}
           </button>
           <p className="incubation-application__note">
             {content.applicationNote ??
               "Our team typically responds within 5-7 business days for initial screening."}
           </p>
+          {message ? (
+            <p className={status === "ok" ? "contact-form__ok" : "contact-form__err"}>
+              {message}
+            </p>
+          ) : null}
         </form>
       </div>
     </section>

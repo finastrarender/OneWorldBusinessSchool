@@ -1,6 +1,7 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element */
+import Link from "next/link";
 import type { z } from "zod";
 import type { servicesDataSchema } from "@/schemas/sections";
 
@@ -15,10 +16,10 @@ export default function ServicesSection({ content }: { content: ServicesContent 
             <h2 className="section-heading__title">{content.title}</h2>
             <p className="section-heading__description">{content.description}</p>
           </div>
-          <a href="/courses" className="services-section__action">
+          <Link href="/courses" className="services-section__action">
             View All Courses
             <span aria-hidden="true"> →</span>
-          </a>
+          </Link>
         </div>
 
         <div className="services-grid services-grid--cards">
@@ -31,7 +32,7 @@ export default function ServicesSection({ content }: { content: ServicesContent 
                 <span className="service-card__badge">{card.category || "PROGRAM"}</span>
                 <h3 className="service-card__title">{card.title}</h3>
                 <p className="service-card__text">{card.description}</p>
-                <a href="/courses" className="service-card__button">Enroll Now</a>
+                <a href="?apply=1" className="service-card__button">Enroll Now</a>
               </div>
             </article>
           ))}
