@@ -9,7 +9,7 @@ export default function HomeIncubationHighlightSection({
   content: HomeIncubationHighlightContent;
 }) {
   return (
-    <section className="home-incubation-highlight ">
+    <section className="home-incubation-highlight section-shell">
       <div className="home-incubation-highlight__copy">
         <h2 className="home-incubation-highlight__title">{content.title}</h2>
         <p className="home-incubation-highlight__description">{content.description}</p>

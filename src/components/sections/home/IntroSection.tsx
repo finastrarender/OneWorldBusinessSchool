@@ -14,7 +14,7 @@ export default function IntroSection({
 
   return (
     <section className="intro-section" id={anchorId ?? undefined}>
-      <div className="intro-section__content">
+      <div className="intro-section__content section-shell">
         <div className="intro-section__copy">
           <h2 className="intro-section__title">
             {titleLines.map((line) => (

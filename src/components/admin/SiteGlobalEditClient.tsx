@@ -50,9 +50,9 @@ function parseLegalMetaLinks(input: string): FooterMetaLink[] {
     .map((line) => {
       const parts = line.split("|").map((part) => part.trim());
       if (parts.length >= 2) {
-        return { label: parts[0], href: parts[1] || "/contact" };
+        return { label: parts[0], href: parts[1] || "" };
       }
-      return { label: parts[0], href: "/contact" };
+      return { label: parts[0], href: "" };
     })
     .filter((item) => item.label);
 }
@@ -277,7 +277,15 @@ export default function SiteGlobalEditClient() {
     const body = {
       navItems,
       logoSrc,
-      footerColumns,
+      footerColumns: footerColumns.map((col) => {
+        if ("links" in col) {
+          return {
+            ...col,
+            links: col.links.map((l) => ({ ...l, href: "" })),
+          };
+        }
+        return col;
+      }),
       footerMeta: {
         brand,
         description,
@@ -414,23 +422,6 @@ export default function SiteGlobalEditClient() {
                         borderRadius: 10,
                       }}
                     >
-                      <select
-                        value={pages.some((page) => getPageHref(page) === link.href) ? link.href : ""}
-                        onChange={(e) => {
-                          if (!e.target.value) return;
-                          updateFooterLink(columnIndex, linkIndex, "href", e.target.value);
-                        }}
-                      >
-                        <option value="">Select an existing page route</option>
-                        {pages.map((page) => {
-                          const href = getPageHref(page);
-                          return (
-                            <option key={page.slug} value={href}>
-                              {page.title} ({href})
-                            </option>
-                          );
-                        })}
-                      </select>
                       <div style={{ display: "flex", gap: 8 }}>
                         <input
                           value={link.label}
@@ -438,13 +429,6 @@ export default function SiteGlobalEditClient() {
                             updateFooterLink(columnIndex, linkIndex, "label", e.target.value)
                           }
                           placeholder="Link label"
-                        />
-                        <input
-                          value={link.href}
-                          onChange={(e) =>
-                            updateFooterLink(columnIndex, linkIndex, "href", e.target.value)
-                          }
-                          placeholder="/about-us"
                         />
                       </div>
                       <button

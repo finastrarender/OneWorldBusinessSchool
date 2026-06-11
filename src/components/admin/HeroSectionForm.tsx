@@ -165,9 +165,7 @@ export default function HeroSectionForm({
           <label>
             Label
             <input
-              {...register("secondaryLabel", {
-                required: "Secondary label is required",
-              })}
+              {...register("secondaryLabel")}
               placeholder="Book Consultancy"
             />
             {errors.secondaryLabel ? (
@@ -177,9 +175,7 @@ export default function HeroSectionForm({
           <label>
             Href
             <input
-              {...register("secondaryHref", {
-                required: "Secondary href is required",
-              })}
+              {...register("secondaryHref")}
               placeholder="/contact"
             />
             {errors.secondaryHref ? (

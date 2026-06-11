@@ -36,12 +36,14 @@ const AboutCta = ({ content }: { content: AboutCtaContent }) => {
             >
               {primaryAction.label}
             </a>
-            <a
-              className="button about-cta__button about-cta__button-secondary"
-              href={secondaryAction.href}
-            >
-              {secondaryAction.label}
-            </a>
+            {content.secondaryAction && (
+              <a
+                className="button about-cta__button about-cta__button-secondary"
+                href={secondaryAction?.href}
+              >
+                {secondaryAction?.label}
+              </a>
+            )}
           </div>
         </div>
       </div>

@@ -9,7 +9,7 @@ import SimpleIcon from "../SimpleIcon";
 type ServicesAccordionContent = z.infer<typeof servicesAccordionDataSchema>;
 
 export default function ServicesAccordionSection({ content }: { content: ServicesAccordionContent }) {
-  const [openIndex, setOpenIndex] = useState(1);
+  const [openIndex, setOpenIndex] = useState(-1);
 
   const getIconName = (cardTitle: string, explicitIcon?: string) => {
     if (explicitIcon && explicitIcon.trim().length > 0) {

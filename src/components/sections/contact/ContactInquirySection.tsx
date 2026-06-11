@@ -8,11 +8,11 @@ import SimpleIcon from "../SimpleIcon";
 type ContactInquiryContent = z.infer<typeof contactInquiryDataSchema>;
  
 const contactFormSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Please enter a valid email address"),
-  phone: z.string().min(5, "Please enter a valid phone number").optional().or(z.literal("")),
-  company: z.string().optional(),
-  inquiryType: z.string().min(1, "Please select an inquiry type"),
+  name: z.string().min(2, "Full name is required"),
+  email: z.string().email("Please enter a valid work email address"),
+  phone: z.string().regex(/^[0-9]+$/, "Please enter a valid phone number (numbers only)").min(10, "Phone number must be at least 10 digits"),
+  company: z.string().min(2, "Organization/Company name is required"),
+  inquiryType: z.string().min(1, "Please select an interest"),
   message: z.string().min(10, "Message must be at least 10 characters"),
 });
 
@@ -145,7 +145,7 @@ export default function ContactInquirySection({ content }: { content: ContactInq
           <form className="contact-inquiry__form" onSubmit={onSubmit} noValidate>
             <div className="contact-inquiry__row">
               <label className="contact-inquiry__field">
-                <span>{formFields.fullNameLabel ?? "Full Name"}</span>
+                <span>{formFields.fullNameLabel ?? "Full Name"} *</span>
                 <input
                   suppressHydrationWarning
                   name="name"
@@ -155,19 +155,20 @@ export default function ContactInquirySection({ content }: { content: ContactInq
                 {errors.name && <span className="field-error">{errors.name}</span>}
               </label>
               <label className="contact-inquiry__field">
-                <span>{formFields.companyLabel ?? "Organization / Company"}</span>
+                <span>{formFields.companyLabel ?? "Organization / Company"} *</span>
                 <input
                   suppressHydrationWarning
                   name="company"
                   type="text"
-                  className="contact-inquiry__input"
+                  className={`contact-inquiry__input${errors.company ? " input-invalid" : ""}`}
                 />
+                {errors.company && <span className="field-error">{errors.company}</span>}
               </label>
             </div>
  
             <div className="contact-inquiry__row">
               <label className="contact-inquiry__field">
-                <span>{formFields.workEmailLabel ?? "Work Email"}</span>
+                <span>{formFields.workEmailLabel ?? "Work Email"} *</span>
                 <input
                   suppressHydrationWarning
                   name="email"
@@ -177,20 +178,24 @@ export default function ContactInquirySection({ content }: { content: ContactInq
                 {errors.email && <span className="field-error">{errors.email}</span>}
               </label>
               <label className="contact-inquiry__field">
-                <span>{formFields.phoneLabel ?? "Phone Number"}</span>
+                <span>{formFields.phoneLabel ?? "Phone Number"} *</span>
                 <input
                   suppressHydrationWarning
                   name="phone"
                   type="text"
                   className={`contact-inquiry__input${errors.phone ? " input-invalid" : ""}`}
-                  placeholder={formFields.phonePlaceholder ?? "+971"}
+                  placeholder={formFields.phonePlaceholder ?? "Numbers only"}
+                  onInput={(e) => {
+                    const target = e.target as HTMLInputElement;
+                    target.value = target.value.replace(/[^0-9]/g, "");
+                  }}
                 />
                 {errors.phone && <span className="field-error">{errors.phone}</span>}
               </label>
             </div>
  
             <label className="contact-inquiry__field">
-              <span>{formFields.interestLabel ?? "Primary Interest"}</span>
+              <span>{formFields.interestLabel ?? "Primary Interest"} *</span>
               <select
                 suppressHydrationWarning
                 name="inquiryType"
@@ -206,7 +211,7 @@ export default function ContactInquirySection({ content }: { content: ContactInq
               {errors.inquiryType && <span className="field-error">{errors.inquiryType}</span>}
             </label>
             <label className="contact-inquiry__field">
-              <span>{formFields.messageLabel ?? "Your Message"}</span>
+              <span>{formFields.messageLabel ?? "Your Message"} *</span>
               <textarea
                 suppressHydrationWarning
                 name="message"

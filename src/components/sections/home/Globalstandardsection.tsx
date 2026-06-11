@@ -5,7 +5,7 @@ type GlobalStandardsContent = z.infer<typeof globalStandardsDataSchema>;
 
 export default function GlobalStandardsSection({ content }: { content: GlobalStandardsContent }) {
   return (
-    <section className="global-standards-section">
+    <section className="global-standards-section section-shell">
       <div className="global-standards-section__header">
         <h2 className="global-standards-section__title">{content.title}</h2>
         <p className="global-standards-section__description">{content.description}</p>

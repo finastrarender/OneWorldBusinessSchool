@@ -16,17 +16,19 @@ export default function ServicesSectionCta({
 }: {
   content: Partial<ServicesCtaContent>;
 }) {
-  const safeContent: ServicesCtaContent = {
+  const safeContent = {
     title: content.title || DEFAULT_CONTENT.title,
     description: content.description || DEFAULT_CONTENT.description,
     primaryAction: {
       label: content.primaryAction?.label || DEFAULT_CONTENT.primaryAction.label,
       href: content.primaryAction?.href || DEFAULT_CONTENT.primaryAction.href,
     },
-    secondaryAction: {
-      label: content.secondaryAction?.label || DEFAULT_CONTENT.secondaryAction.label,
-      href: content.secondaryAction?.href || DEFAULT_CONTENT.secondaryAction.href,
-    },
+    secondaryAction: content.secondaryAction
+      ? {
+          label: content.secondaryAction.label || DEFAULT_CONTENT.secondaryAction!.label,
+          href: content.secondaryAction.href || DEFAULT_CONTENT.secondaryAction!.href,
+        }
+      : undefined,
   };
 
   return (
@@ -39,9 +41,11 @@ export default function ServicesSectionCta({
             <a className="services-cta__button services-cta__button-primary" href={safeContent.primaryAction.href}>
               {safeContent.primaryAction.label}
             </a>
-            <a className="services-cta__button services-cta__button-secondary" href={safeContent.secondaryAction.href}>
-              {safeContent.secondaryAction.label}
-            </a>
+            {safeContent.secondaryAction && (
+              <a className="services-cta__button services-cta__button-secondary" href={safeContent.secondaryAction.href}>
+                {safeContent.secondaryAction.label}
+              </a>
+            )}
           </div>
         </div>
       </div>

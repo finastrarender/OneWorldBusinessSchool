@@ -3127,7 +3127,7 @@ export function IndustriesHeroSectionForm({
           Label
           <input
             {...register("secondaryLabel", {
-              required: "Secondary label is required",
+              
             })}
           />
           {errors.secondaryLabel ? (
@@ -3138,7 +3138,7 @@ export function IndustriesHeroSectionForm({
           Href
           <input
             {...register("secondaryHref", {
-              required: "Secondary href is required",
+              
             })}
           />
           {errors.secondaryHref ? (
@@ -3524,7 +3524,7 @@ export function ServicesCtaSectionForm({
           Label
           <input
             {...register("secondaryLabel", {
-              required: "Secondary label is required",
+              
             })}
           />
           {errors.secondaryLabel ? (
@@ -3535,7 +3535,7 @@ export function ServicesCtaSectionForm({
           Href
           <input
             {...register("secondaryHref", {
-              required: "Secondary href is required",
+              
             })}
           />
           {errors.secondaryHref ? (
@@ -3682,7 +3682,7 @@ export function IndustriesCtaSectionForm({
           Label
           <input
             {...register("secondaryLabel", {
-              required: "Secondary label is required",
+              
             })}
           />
           {errors.secondaryLabel ? (
@@ -3693,7 +3693,7 @@ export function IndustriesCtaSectionForm({
           Href
           <input
             {...register("secondaryHref", {
-              required: "Secondary href is required",
+              
             })}
           />
           {errors.secondaryHref ? (

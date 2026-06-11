@@ -9,6 +9,8 @@ type IncubationContent = z.infer<typeof incubationDataSchema>;
 export default function IncubationPageSection({ content }: { content: IncubationContent }) {
   const [status, setStatus] = useState<"idle" | "loading" | "ok" | "err">("idle");
   const [message, setMessage] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
   const heroTitleLines =
     content.heroTitleLines && content.heroTitleLines.length > 0
       ? content.heroTitleLines
@@ -45,13 +47,30 @@ export default function IncubationPageSection({ content }: { content: Incubation
     e.preventDefault();
     setStatus("loading");
     setMessage("");
+    setErrors({});
 
     const form = e.currentTarget;
     const fd = new FormData(form);
-    const fields = applicationFields.map((field, index) => ({
-      label: field.label,
-      value: String(fd.get(`field-${index}`) ?? ""),
-    }));
+    
+    // Client-side validation
+    const newErrors: Record<string, string> = {};
+    const fields = applicationFields.map((field, index) => {
+      const val = String(fd.get(`field-${index}`) ?? "").trim();
+      if (!val) {
+        newErrors[`field-${index}`] = `${field.label} is required`;
+      }
+      return {
+        label: field.label,
+        value: val,
+      };
+    });
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      setStatus("err");
+      setMessage("Please fill in all required fields.");
+      return;
+    }
 
     try {
       const res = await fetch("/api/v1/incubation-applications", {
@@ -59,10 +78,13 @@ export default function IncubationPageSection({ content }: { content: Incubation
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ fields }),
       });
-      const json = await res.json().catch(() => ({}));
+      const json = await res.json().catch(() => null);
       if (!res.ok) {
         setStatus("err");
-        setMessage(json?.error?.message ?? "Something went wrong");
+        setMessage(
+          json?.error?.message ?? 
+          (res.status === 500 ? "Server encountered an error. Please try again later." : "Connection failed")
+        );
         return;
       }
       setStatus("ok");
@@ -191,13 +213,23 @@ export default function IncubationPageSection({ content }: { content: Incubation
         <form className="incubation-application__form" onSubmit={onApplicationSubmit}>
           <div className="incubation-application__grid">
             {applicationFields.map((field, index) => (
-              <label
+              <div
                 key={`${field.label}-${index}`}
-                className={`incubation-application__field ${index < 2 ? "incubation-application__field--half" : ""}`}
+                className={`incubation-application__field-wrapper ${index < 2 ? "incubation-application__field--half" : ""}`}
               >
-                <span>{field.label}</span>
-                <input name={`field-${index}`} type="text" placeholder={field.placeholder} />
-              </label>
+                <label className="incubation-application__field">
+                  <span>{field.label}</span>
+                  <input
+                    name={`field-${index}`}
+                    type="text"
+                    placeholder={field.placeholder}
+                    className={errors[`field-${index}`] ? "input-invalid" : ""}
+                  />
+                  {errors[`field-${index}`] && (
+                    <span className="field-error">{errors[`field-${index}`]}</span>
+                  )}
+                </label>
+              </div>
             ))}
           </div>
           <button

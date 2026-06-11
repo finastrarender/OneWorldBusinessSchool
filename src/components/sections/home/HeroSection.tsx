@@ -54,9 +54,11 @@ export default function HeroSection({
             <a className="button hero-section__button hero-section__button--primary" href={content.primaryAction.href}>
               {content.primaryAction.label}
             </a>
-            <a className="button hero-section__button hero-section__button--secondary" href={content.secondaryAction.href}>
-              {content.secondaryAction.label}
-            </a>
+            {content.secondaryAction && (
+              <a className="button hero-section__button hero-section__button--secondary" href={content.secondaryAction.href}>
+                {content.secondaryAction.label}
+              </a>
+            )}
           </div>
         </div>
       </div>

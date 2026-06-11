@@ -65,12 +65,14 @@ export default function CoursesCatalogSection({ content }: { content: CoursesCat
 
   return (
     <section className="courses-catalog">
-      <div >
-        <div className="courses-catalog__hero">
+      <div className="courses-catalog__hero">
+        <div className="section-shell">
           <h1 className="courses-catalog__title">{content.title}</h1>
           <p className="courses-catalog__description">{content.description}</p>
         </div>
+      </div>
 
+      <div className="section-shell">
         <div className="courses-catalog__layout">
           <aside className="courses-filters">
             <div className="courses-filters__group">

@@ -6,7 +6,7 @@ import { z } from "zod";
 const enrollmentSchema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters"),
   email: z.string().email("Please enter a valid email address"),
-  phone: z.string().min(5, "Please enter a valid phone number").optional().or(z.literal("")),
+  phone: z.string().regex(/^[0-9]+$/, "Phone number must contain only numbers").min(10, "Phone number must be at least 10 digits"),
   city: z.string().min(1, "Please select a city"),
   experience: z.string().min(1, "Please select your experience level"),
   message: z.string().optional(),
@@ -150,6 +150,10 @@ export default function ApplyNowCard({ content }: { content: ApplyNowModalConten
                 type="text" 
                 placeholder={content.phonePlaceholder} 
                 className={errors.phone ? "input-invalid" : ""}
+                onInput={(e) => {
+                  const target = e.target as HTMLInputElement;
+                  target.value = target.value.replace(/[^0-9]/g, "");
+                }}
               />
               {errors.phone && <span className="field-error">{errors.phone}</span>}
             </label>

@@ -21,7 +21,7 @@ function normalizeMetaLinks(
       }
       return {
         label: item.label,
-        href: typeof item.href === "string" && item.href.trim() !== "" ? item.href : defaultHref,
+        href: typeof item.href === "string" && item.href.trim() !== "" ? item.href : "",
         icon: item.icon,
       };
     })
@@ -29,7 +29,7 @@ function normalizeMetaLinks(
 }
 
 function isValidFooterLink(link: FooterLink) {
-  return typeof link.href === "string" && link.href.trim() !== "" && typeof link.label === "string" && link.label.trim() !== "";
+  return typeof link.label === "string" && link.label.trim() !== "";
 }
 
 function SocialIcon({ token }: { token?: string }) {
@@ -121,7 +121,11 @@ export default function SiteFooter({
                   .filter(isValidFooterLink)
                   .map((item) => (
                     <li key={item.label}>
-                      <Link href={item.href}>{item.label}</Link>
+                      {item.href ? (
+                        <Link href={item.href}>{item.label}</Link>
+                      ) : (
+                        <span>{item.label}</span>
+                      )}
                     </li>
                   ))}
               </ul>
@@ -134,11 +138,7 @@ export default function SiteFooter({
                   
                   return (
                     <li key={item.value} className="site-footer__contact-item">
-                      {href ? (
-                        <a href={href} className="contact-link">{item.value}</a>
-                      ) : (
-                        <span>{item.value}</span>
-                      )}
+                      <span>{item.value}</span>
                     </li>
                   );
                 })}
@@ -154,12 +154,7 @@ export default function SiteFooter({
 
         <div className="site-footer__legal">
           {legalLinks.map((item) => (
-            <Link
-              key={`${item.label}-${item.href}`}
-              href={item.href}
-            >
-              {item.label}
-            </Link>
+            <span key={item.label}>{item.label}</span>
           ))}
         </div>
       </div>

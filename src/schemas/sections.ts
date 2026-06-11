@@ -27,7 +27,7 @@ export const heroDataSchema = z.object({
   title: z.array(z.string()),
   description: z.string(),
   primaryAction: z.object({ label: z.string(), href: z.string() }),
-  secondaryAction: z.object({ label: z.string(), href: z.string() }),
+  secondaryAction: z.object({ label: z.string(), href: z.string() }).optional(),
   backgroundImage: z.string(),
 });
 
@@ -116,7 +116,7 @@ export const servicesCtaDataSchema = z.object({
   title: z.string(),
   description: z.string(),
   primaryAction: z.object({ label: z.string(), href: z.string() }),
-  secondaryAction: z.object({ label: z.string(), href: z.string() }),
+  secondaryAction: z.object({ label: z.string(), href: z.string() }).optional(),
 });
 
 const courseCardSchema = z.object({
@@ -278,7 +278,7 @@ export const industriesHeroDataSchema = z.object({
   title: z.array(z.string()).min(1),
   description: z.string(),
   primaryAction: z.object({ label: z.string(), href: z.string() }),
-  secondaryAction: z.object({ label: z.string(), href: z.string() }),
+  secondaryAction: z.object({ label: z.string(), href: z.string() }).optional(),
 });
 
 const industriesGridItemSchema = z.object({
@@ -302,7 +302,7 @@ export const industriesCtaDataSchema = z.object({
   title: z.array(z.string()).min(1),
   description: z.string(),
   primaryAction: z.object({ label: z.string(), href: z.string() }),
-  secondaryAction: z.object({ label: z.string(), href: z.string() }),
+  secondaryAction: z.object({ label: z.string(), href: z.string() }).optional(),
 });
 
 const contactInfoItemSchema = z.object({
@@ -432,7 +432,7 @@ export const aboutCtaDataSchema = z.object({
   title: z.array(z.string()).min(1),
   description: z.string(),
   primaryAction: z.object({ label: z.string(), href: z.string() }),
-  secondaryAction: z.object({ label: z.string(), href: z.string() }),
+  secondaryAction: z.object({ label: z.string(), href: z.string() }).optional(),
 });
 
 const researchPillarSchema = z.object({

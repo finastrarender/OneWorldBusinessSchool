@@ -10,7 +10,7 @@ const customFieldSchema = z.object({
 
 const bodySchema = z.object({
   fullName: z.string().min(1).max(200),
-  phone: z.string().max(120).optional().default(""),
+  phone: z.string().regex(/^[0-9]+$/, "Phone number must contain only numbers").min(10, "Phone number must be at least 10 digits"),
   email: z.string().email().max(320),
   city: z.string().max(200).optional().default(""),
   experience: z.string().max(200).optional().default(""),
