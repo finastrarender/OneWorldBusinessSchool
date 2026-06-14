@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import IncubationApplicationsList from "@/components/admin/IncubationApplicationsList";
 import { auth } from "@/auth";
 import { connectMongo } from "@/lib/mongoose";
 import IncubationApplication from "@/models/IncubationApplication";
@@ -15,15 +16,6 @@ type IncubationApplicationListItem = {
   createdAt?: Date;
 };
 
-function formatDate(value?: Date) {
-  return value
-    ? new Intl.DateTimeFormat("en", {
-        dateStyle: "medium",
-        timeStyle: "short",
-      }).format(value)
-    : "-";
-}
-
 export default async function AdminIncubationPage() {
   const session = await auth();
   if (!session?.user) redirect("/admin/login");
@@ -32,6 +24,12 @@ export default async function AdminIncubationPage() {
   const applications = (await IncubationApplication.find({})
     .sort({ createdAt: -1 })
     .lean()) as IncubationApplicationListItem[];
+
+  const serialized = applications.map((application) => ({
+    _id: String(application._id),
+    fields: application.fields,
+    createdAt: application.createdAt?.toISOString(),
+  }));
 
   return (
     <div className="admin-shell">
@@ -44,20 +42,7 @@ export default async function AdminIncubationPage() {
         <p className="admin-muted">Submitted from the incubation page application form.</p>
 
         <div className="admin-section-group">
-          {applications.map((application) => (
-            <article key={String(application._id)} className="admin-section-card">
-              <h3 style={{ marginTop: 0 }}>Application</h3>
-              <p className="admin-muted">{formatDate(application.createdAt)}</p>
-              {application.fields.map((field, index) => (
-                <p key={`${field.label}-${index}`}>
-                  <strong>{field.label}:</strong> {field.value || "-"}
-                </p>
-              ))}
-            </article>
-          ))}
-          {applications.length === 0 ? (
-            <p className="admin-muted">No applications submitted yet.</p>
-          ) : null}
+          <IncubationApplicationsList applications={serialized} />
         </div>
       </div>
     </div>

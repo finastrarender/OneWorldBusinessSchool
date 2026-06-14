@@ -2,11 +2,11 @@ import { z } from "zod";
 import { Resend } from "resend";
 import { jsonData, jsonError } from "@/lib/api-response";
 import {
+  alphabeticNameFieldSchema,
   contactBlockFormSchema,
   contactInquiryFormSchema,
   emailFieldSchema,
   messageFieldSchema,
-  nameFieldSchema,
 } from "@/lib/form-validation";
 import { connectMongo } from "@/lib/mongoose";
 import ContactLead from "@/models/ContactLead";
@@ -28,7 +28,7 @@ function parseContactBody(body: unknown) {
 
   const simple = simpleContactSchema.safeParse(body);
   if (simple.success) {
-    const nameCheck = nameFieldSchema.safeParse(simple.data.name);
+    const nameCheck = alphabeticNameFieldSchema.safeParse(simple.data.name);
     const emailCheck = emailFieldSchema.safeParse(simple.data.email);
     const messageCheck = messageFieldSchema.safeParse(simple.data.message);
     if (nameCheck.success && emailCheck.success && messageCheck.success) {

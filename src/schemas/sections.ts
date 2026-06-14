@@ -191,6 +191,8 @@ const incubationPortfolioCardSchema = z.object({
 const incubationApplicationFieldSchema = z.object({
   label: z.string(),
   placeholder: z.string(),
+  inputType: z.enum(["text", "email", "select"]).optional(),
+  options: z.array(z.string()).optional(),
 });
 
 export const incubationDataSchema = z.object({
@@ -219,6 +221,8 @@ export const incubationDataSchema = z.object({
   applicationFields: z.array(incubationApplicationFieldSchema).optional(),
   applicationSubmitLabel: z.string().optional(),
   applicationNote: z.string().optional(),
+  applicationSuccessMessage: z.string().optional(),
+  applicationErrorMessage: z.string().optional(),
 });
 
 const globalStandardsPillarSchema = z.object({

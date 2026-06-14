@@ -55,7 +55,8 @@ export default function ContactInquirySection({ content }: { content: ContactInq
     const validation = contactInquiryFormSchema.safeParse(formData);
     if (!validation.success) {
       setErrors(zodErrorsToRecord(validation.error));
-      setStatus("idle");
+      setStatus("err");
+      setMessage("Please complete all required fields correctly before continuing.");
       return;
     }
 
@@ -68,15 +69,21 @@ export default function ContactInquirySection({ content }: { content: ContactInq
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
         setStatus("err");
-        setMessage(json?.error?.message ?? "Something went wrong");
+        setMessage(
+          json?.error?.message ??
+            formFields.errorMessage ??
+            "Something went wrong. Please try again.",
+        );
         return;
       }
       setStatus("ok");
-      setMessage(formFields.successMessage ?? "Thank you — our consultants will be in touch shortly.");
+      setMessage(
+        formFields.successMessage ?? "Thank you — our consultants will be in touch shortly.",
+      );
       form.reset();
     } catch {
       setStatus("err");
-      setMessage(formFields.errorMessage ?? "Network error");
+      setMessage(formFields.errorMessage ?? "Network error. Please try again.");
     }
   }
  
@@ -226,7 +233,9 @@ export default function ContactInquirySection({ content }: { content: ContactInq
             </p>
  
             {message ? (
-              <p className={status === "ok" ? "contact-form__ok" : "contact-form__err"}>{message}</p>
+              <p className={status === "ok" ? "contact-form__ok" : "contact-form__err"} role="status">
+                {message}
+              </p>
             ) : null}
           </form>
         </div>

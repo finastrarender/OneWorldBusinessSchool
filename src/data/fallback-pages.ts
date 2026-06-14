@@ -268,17 +268,27 @@ const incubationData = {
   applicationDescription:
     "We are looking for bold founders solving hard problems. Our next cohort application window is now open. Apply today and get access to the ecosystem you need to win.",
   applicationFields: [
-    { label: "Full Name", placeholder: "Jane Doe" },
-    { label: "Startup Name", placeholder: "Acme Inc." },
-    { label: "Email Address", placeholder: "jane@startup.com" },
+    { label: "Full Name", placeholder: "Jane Doe", inputType: "text" },
+    { label: "Startup Name", placeholder: "Acme Inc", inputType: "text" },
+    { label: "Email Address", placeholder: "jane@startup.com", inputType: "email" },
     {
-      label: "Pitch Deck URL",
-      placeholder: "https://dropbox.com/your-pitch-deck",
+      label: "Requirement Type",
+      placeholder: "Select requirement type",
+      inputType: "select",
+      options: [
+        "Mentorship & Coaching",
+        "Funding & Investment Support",
+        "Workspace & Infrastructure",
+        "Business Advisory",
+      ],
     },
   ],
   applicationSubmitLabel: "Submit Application",
   applicationNote:
     "Our team typically responds within 5-7 business days for initial screening.",
+  applicationSuccessMessage:
+    "Thank you — your incubation application has been submitted successfully.",
+  applicationErrorMessage: "Something went wrong. Please try again or contact us directly.",
   image: "/home/headquarters.png",
   stat: {
     value: "250+",

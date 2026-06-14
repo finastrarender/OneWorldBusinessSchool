@@ -2155,6 +2155,8 @@ type IncubationPortfolioCardFormValue = {
 type IncubationApplicationFieldFormValue = {
   label: string;
   placeholder: string;
+  inputType: "text" | "email" | "select";
+  optionsLines: string;
 };
 
 type IncubationFormValues = {
@@ -2176,6 +2178,8 @@ type IncubationFormValues = {
   applicationFields: IncubationApplicationFieldFormValue[];
   applicationSubmitLabel: string;
   applicationNote: string;
+  applicationSuccessMessage: string;
+  applicationErrorMessage: string;
 };
 
 function toIncubationDefaultValues(
@@ -2282,20 +2286,44 @@ function toIncubationDefaultValues(
         ? rawApplicationFields.map((field) => ({
             label: (field.label as string) ?? "",
             placeholder: (field.placeholder as string) ?? "",
+            inputType:
+              (field.inputType as IncubationApplicationFieldFormValue["inputType"]) ??
+              ((field.label as string)?.toLowerCase().includes("email")
+                ? "email"
+                : (field.label as string)?.toLowerCase().includes("requirement")
+                  ? "select"
+                  : "text"),
+            optionsLines: Array.isArray(field.options)
+              ? (field.options as string[]).join("\n")
+              : "",
           }))
         : [
-            { label: "Full Name", placeholder: "Jane Doe" },
-            { label: "Startup Name", placeholder: "Acme Inc." },
-            { label: "Email Address", placeholder: "jane@startup.com" },
+            { label: "Full Name", placeholder: "Jane Doe", inputType: "text" as const, optionsLines: "" },
+            { label: "Startup Name", placeholder: "Acme Inc", inputType: "text" as const, optionsLines: "" },
             {
-              label: "Pitch Deck URL",
-              placeholder: "https://dropbox.com/your-pitch-deck",
+              label: "Email Address",
+              placeholder: "jane@startup.com",
+              inputType: "email" as const,
+              optionsLines: "",
+            },
+            {
+              label: "Requirement Type",
+              placeholder: "Select requirement type",
+              inputType: "select" as const,
+              optionsLines:
+                "Mentorship & Coaching\nFunding & Investment Support\nWorkspace & Infrastructure\nBusiness Advisory",
             },
           ],
     applicationSubmitLabel: (data.applicationSubmitLabel as string) ?? "Submit Application",
     applicationNote:
       (data.applicationNote as string) ??
       "Our team typically responds within 5-7 business days for initial screening.",
+    applicationSuccessMessage:
+      (data.applicationSuccessMessage as string) ??
+      "Thank you — your incubation application has been submitted successfully.",
+    applicationErrorMessage:
+      (data.applicationErrorMessage as string) ??
+      "Something went wrong. Please try again or contact us directly.",
   };
 }
 
@@ -2382,9 +2410,19 @@ export function IncubationSectionForm({
         .map((field) => ({
           label: field.label.trim(),
           placeholder: field.placeholder.trim(),
+          inputType: field.inputType,
+          options:
+            field.inputType === "select"
+              ? field.optionsLines
+                  .split("\n")
+                  .map((line) => line.trim())
+                  .filter(Boolean)
+              : undefined,
         })),
       applicationSubmitLabel: values.applicationSubmitLabel,
       applicationNote: values.applicationNote,
+      applicationSuccessMessage: values.applicationSuccessMessage.trim(),
+      applicationErrorMessage: values.applicationErrorMessage.trim(),
       title: heroTitleLines.join("\n"),
       description: values.heroDescription,
       steps: roadmapItemsSaved.map((item, index) => ({
@@ -2585,6 +2623,18 @@ export function IncubationSectionForm({
                 })}
               />
             </label>
+            <label>
+              Field {index + 1} type
+              <select {...register(`applicationFields.${index}.inputType` as const)}>
+                <option value="text">Text</option>
+                <option value="email">Email</option>
+                <option value="select">Select dropdown</option>
+              </select>
+            </label>
+            <label>
+              Field {index + 1} options (one per line, for select fields)
+              <textarea rows={4} {...register(`applicationFields.${index}.optionsLines` as const)} />
+            </label>
           </div>
         ))}
         <label>
@@ -2598,6 +2648,22 @@ export function IncubationSectionForm({
         <label>
           Bottom note
           <input {...register("applicationNote", { required: "Bottom note is required" })} />
+        </label>
+        <label>
+          Success message
+          <input
+            {...register("applicationSuccessMessage", {
+              required: "Success message is required",
+            })}
+          />
+        </label>
+        <label>
+          Error message
+          <input
+            {...register("applicationErrorMessage", {
+              required: "Error message is required",
+            })}
+          />
         </label>
       </div>
 

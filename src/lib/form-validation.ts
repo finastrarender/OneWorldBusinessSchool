@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 const NAME_REGEX = /^[A-Za-z ]+$/;
+const CONTACT_MESSAGE_REGEX = /^[A-Za-z0-9\s]+$/;
 const FACILITY_REGEX = /^[A-Za-z0-9\s&.\-/()]+$/;
 const PHONE_REGEX = /^\+[0-9]{8,15}$/;
 
@@ -40,6 +41,27 @@ export const nameFieldSchema = z
   .max(50, "Name cannot exceed 50 characters.")
   .regex(NAME_REGEX, "Name can only contain letters and spaces.");
 
+export const alphabeticNameFieldSchema = z
+  .string()
+  .trim()
+  .min(1, "Please enter your name.")
+  .min(2, "Name must be at least 2 characters long.")
+  .max(100, "Name cannot exceed 100 characters.")
+  .regex(NAME_REGEX, "Name can only contain letters and spaces.");
+
+export const startupNameFieldSchema = z
+  .string()
+  .trim()
+  .min(1, "Please enter your startup name.")
+  .min(2, "Startup name must be at least 2 characters long.")
+  .max(100, "Startup name cannot exceed 100 characters.")
+  .regex(NAME_REGEX, "Startup name can only contain letters and spaces.");
+
+export const requirementTypeFieldSchema = z
+  .string()
+  .trim()
+  .min(1, "Please select a requirement type.");
+
 export const emailFieldSchema = z
   .string()
   .trim()
@@ -65,10 +87,26 @@ export const facilityNameFieldSchema = z
   .max(100, "Facility name cannot exceed 150 characters.")
   .regex(FACILITY_REGEX, "Please enter a valid clinic or hospital name.");
 
-export const serviceTypeFieldSchema = z
+export const organizationNameFieldSchema = z
   .string()
   .trim()
-  .min(1, "Please select a primary interest.");
+  .min(1, "Please enter your organization or company name.")
+  .min(2, "Organization name must be at least 2 characters long.")
+  .max(100, "Organization name cannot exceed 100 characters.")
+  .regex(NAME_REGEX, "Organization name can only contain letters and spaces.");
+
+export const primaryInterestFieldSchema = z
+  .string()
+  .trim()
+  .min(1, "Please select any interest.");
+
+export const contactMessageFieldSchema = z
+  .string()
+  .trim()
+  .min(1, "Please enter your message.")
+  .min(20, "Message must be at least 20 characters long.")
+  .max(1000, "Message cannot exceed 1000 characters.")
+  .regex(CONTACT_MESSAGE_REGEX, "Message cannot contain special characters.");
 
 export const messageFieldSchema = z
   .string()
@@ -76,6 +114,8 @@ export const messageFieldSchema = z
   .min(1, "Please enter your requirements.")
   .min(10, "Message must be at least 10 characters long.")
   .max(1000, "Message cannot exceed 1000 characters.");
+
+export const serviceTypeFieldSchema = primaryInterestFieldSchema;
 
 export const pitchDeckUrlFieldSchema = z
   .string()
@@ -97,12 +137,12 @@ export const enrollNowFormSchema = z.object({
 });
 
 export const contactInquiryFormSchema = z.object({
-  name: nameFieldSchema,
+  name: alphabeticNameFieldSchema,
   email: emailFieldSchema,
   phone: phoneFieldSchema,
-  company: facilityNameFieldSchema,
-  inquiryType: serviceTypeFieldSchema,
-  message: messageFieldSchema,
+  company: organizationNameFieldSchema,
+  inquiryType: primaryInterestFieldSchema,
+  message: contactMessageFieldSchema,
 });
 
 export const contactBlockFormSchema = z.object({
@@ -133,35 +173,24 @@ export function validateIncubationField(label: string, value: string): string | 
     return emailFieldSchema.safeParse(value).error?.issues[0]?.message ?? null;
   }
 
+  if (key.includes("requirement") && key.includes("type")) {
+    return requirementTypeFieldSchema.safeParse(value).error?.issues[0]?.message ?? null;
+  }
+
   if (key.includes("phone")) {
     return validatePhone(value.trim());
   }
 
-  if (key.includes("full name") || (key.includes("name") && !key.includes("startup") && !key.includes("company"))) {
-    return nameFieldSchema.safeParse(value).error?.issues[0]?.message ?? null;
+  if (key.includes("startup")) {
+    return startupNameFieldSchema.safeParse(value).error?.issues[0]?.message ?? null;
   }
 
-  if (key.includes("startup") || key.includes("company") || key.includes("organization")) {
-    const trimmed = value.trim();
-    if (!trimmed) {
-      return key.includes("startup")
-        ? "Please enter your startup name."
-        : "Please enter your clinic or hospital name.";
-    }
-    if (trimmed.length < 2) {
-      return key.includes("startup")
-        ? "Please enter a valid startup name."
-        : "Please enter a valid clinic or hospital name.";
-    }
-    if (trimmed.length > 100) {
-      return "Facility name cannot exceed 150 characters.";
-    }
-    if (!FACILITY_REGEX.test(trimmed)) {
-      return key.includes("startup")
-        ? "Please enter a valid startup name."
-        : "Please enter a valid clinic or hospital name.";
-    }
-    return null;
+  if (key.includes("full name") || (key === "name" || (key.includes("name") && !key.includes("startup") && !key.includes("company")))) {
+    return alphabeticNameFieldSchema.safeParse(value).error?.issues[0]?.message ?? null;
+  }
+
+  if (key.includes("company") || key.includes("organization")) {
+    return organizationNameFieldSchema.safeParse(value).error?.issues[0]?.message ?? null;
   }
 
   if (key.includes("url") || key.includes("pitch") || key.includes("deck")) {
@@ -170,6 +199,10 @@ export function validateIncubationField(label: string, value: string): string | 
 
   if (key.includes("message")) {
     return messageFieldSchema.safeParse(value).error?.issues[0]?.message ?? null;
+  }
+
+  if (key.includes("type") || key.includes("select")) {
+    return requirementTypeFieldSchema.safeParse(value).error?.issues[0]?.message ?? null;
   }
 
   if (!value.trim()) {

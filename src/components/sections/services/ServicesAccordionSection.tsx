@@ -40,15 +40,13 @@ export default function ServicesAccordionSection({ content }: { content: Service
             const fallbackIcon = getIconName(card.title);
             const iconName = card.icon?.trim() || fallbackIcon;
             const LucideIcon = resolveAccordionIcon(card.icon);
+            const panelId = `services-accordion-panel-${index}`;
+            const triggerId = `services-accordion-trigger-${index}`;
+            const titleId = `services-accordion-title-${index}`;
             return (
               <article key={card.title} className={`services-accordion-page__item${isOpen ? " is-open" : ""}`}>
-                <button
-                  type="button"
-                  className="services-accordion-page__trigger"
-                  aria-expanded={isOpen}
-                  onClick={() => setOpenIndex((prev) => (prev === index ? -1 : index))}
-                >
-                  <span className="services-accordion-page__lead">
+                <div className="services-accordion-page__header">
+                  <div className="services-accordion-page__lead">
                     <span className="services-accordion-page__icon-wrap">
                       {LucideIcon ? (
                         <LucideIcon className="services-accordion-page__icon" aria-hidden="true" />
@@ -56,35 +54,64 @@ export default function ServicesAccordionSection({ content }: { content: Service
                         <SimpleIcon name={iconName} className="services-accordion-page__icon" />
                       )}
                     </span>
-                    <span className="services-accordion-page__title">{card.title}</span>
-                  </span>
-                  <span className="services-accordion-page__chevron" aria-hidden="true">
-                    {isOpen ? "^" : "v"}
-                  </span>
-                </button>
+                    <h3 id={titleId} className="services-accordion-page__title">{card.title}</h3>
+                  </div>
+                  <button
+                    type="button"
+                    id={triggerId}
+                    className="services-accordion-page__chevron-btn"
+                    aria-expanded={isOpen}
+                    aria-controls={panelId}
+                    aria-label={`${isOpen ? "Collapse" : "Expand"} ${card.title}`}
+                    onClick={() => setOpenIndex((prev) => (prev === index ? -1 : index))}
+                  >
+                    <svg
+                      className={`services-accordion-page__chevron${isOpen ? " is-open" : ""}`}
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M6 9l6 6 6-6"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                </div>
 
-                {isOpen && (
-                  <div className="services-accordion-page__panel">
+                {isOpen ? (
+                  <div
+                    id={panelId}
+                    className="services-accordion-page__panel"
+                    role="region"
+                    aria-labelledby={titleId}
+                  >
                     <div className="services-accordion-page__copy">
                       <p className="services-accordion-page__description">{card.description}</p>
                       {Array.isArray(card.points) && card.points.length > 0 && (
-                        <ul className="services-accordion-page__points">
-                          {card.points.map((point) => (
-                            <li key={point}>{point}</li>
-                          ))}
-                        </ul>
+                        <>
+                          <p className="services-accordion-page__points-label">Key offerings</p>
+                          <ul className="services-accordion-page__points">
+                            {card.points.map((point) => (
+                              <li key={point}>{point}</li>
+                            ))}
+                          </ul>
+                        </>
                       )}
                     </div>
 
                     <div className="services-accordion-page__media">
                       <img
                         src={card.iconImage ?? "/home/headquarters.png"}
-                        alt={card.title}
+                        alt=""
                         className="services-accordion-page__image"
                       />
                     </div>
                   </div>
-                )}
+                ) : null}
               </article>
             );
           })}

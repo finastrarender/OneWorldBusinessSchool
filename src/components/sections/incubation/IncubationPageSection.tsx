@@ -6,11 +6,52 @@ import { sanitizePhoneInput, validateIncubationFields } from "@/lib/form-validat
 import type { incubationDataSchema } from "@/schemas/sections";
 
 type IncubationContent = z.infer<typeof incubationDataSchema>;
+type ApplicationField = NonNullable<IncubationContent["applicationFields"]>[number];
+
+const DEFAULT_APPLICATION_FIELDS: ApplicationField[] = [
+  { label: "Full Name", placeholder: "Jane Doe", inputType: "text" },
+  { label: "Startup Name", placeholder: "Acme Inc", inputType: "text" },
+  { label: "Email Address", placeholder: "jane@startup.com", inputType: "email" },
+  {
+    label: "Requirement Type",
+    placeholder: "Select requirement type",
+    inputType: "select",
+    options: [
+      "Mentorship & Coaching",
+      "Funding & Investment Support",
+      "Workspace & Infrastructure",
+      "Business Advisory",
+    ],
+  },
+];
+
+function resolveFieldInputType(field: ApplicationField): "text" | "email" | "select" {
+  if (field.inputType) return field.inputType;
+  const label = field.label.toLowerCase();
+  if (label.includes("email")) return "email";
+  if (label.includes("requirement") && label.includes("type")) return "select";
+  return "text";
+}
+
+function resolveFieldOptions(field: ApplicationField): string[] {
+  if (field.options && field.options.length > 0) return field.options;
+  if (resolveFieldInputType(field) === "select") {
+    return DEFAULT_APPLICATION_FIELDS.find((item) => item.inputType === "select")?.options ?? [];
+  }
+  return [];
+}
 
 export default function IncubationPageSection({ content }: { content: IncubationContent }) {
   const [status, setStatus] = useState<"idle" | "loading" | "ok" | "err">("idle");
   const [message, setMessage] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const successMessage =
+    content.applicationSuccessMessage?.trim() ||
+    "Thank you — your incubation application has been submitted successfully.";
+  const errorMessage =
+    content.applicationErrorMessage?.trim() ||
+    "Something went wrong. Please try again or contact us directly.";
 
   const heroTitleLines =
     content.heroTitleLines && content.heroTitleLines.length > 0
@@ -34,15 +75,7 @@ export default function IncubationPageSection({ content }: { content: Incubation
   const applicationFields =
     content.applicationFields && content.applicationFields.length > 0
       ? content.applicationFields
-      : [
-          { label: "Full Name", placeholder: "Jane Doe" },
-          { label: "Startup Name", placeholder: "Acme Inc." },
-          { label: "Email Address", placeholder: "jane@startup.com" },
-          {
-            label: "Pitch Deck URL",
-            placeholder: "https://dropbox.com/your-pitch-deck",
-          },
-        ];
+      : DEFAULT_APPLICATION_FIELDS;
 
   async function onApplicationSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -52,7 +85,7 @@ export default function IncubationPageSection({ content }: { content: Incubation
 
     const form = e.currentTarget;
     const fd = new FormData(form);
-    
+
     const fields = applicationFields.map((field, index) => ({
       label: field.label,
       value: String(fd.get(`field-${index}`) ?? ""),
@@ -61,8 +94,8 @@ export default function IncubationPageSection({ content }: { content: Incubation
     const newErrors = validateIncubationFields(fields);
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      setStatus("idle");
-      setMessage("Please correct the errors below.");
+      setStatus("err");
+      setMessage("Please complete all required fields correctly before continuing.");
       return;
     }
 
@@ -80,18 +113,15 @@ export default function IncubationPageSection({ content }: { content: Incubation
       const json = await res.json().catch(() => null);
       if (!res.ok) {
         setStatus("err");
-        setMessage(
-          json?.error?.message ?? 
-          (res.status === 500 ? "Server encountered an error. Please try again later." : "Connection failed")
-        );
+        setMessage(json?.error?.message ?? errorMessage);
         return;
       }
       setStatus("ok");
-      setMessage("Thank you - your application has been submitted.");
+      setMessage(successMessage);
       form.reset();
     } catch {
       setStatus("err");
-      setMessage("Network error");
+      setMessage(errorMessage);
     }
   }
 
@@ -211,32 +241,53 @@ export default function IncubationPageSection({ content }: { content: Incubation
         </div>
         <form className="incubation-application__form" onSubmit={onApplicationSubmit} noValidate>
           <div className="incubation-application__grid">
-            {applicationFields.map((field, index) => (
-              <div
-                key={`${field.label}-${index}`}
-                className={`incubation-application__field-wrapper ${index < 2 ? "incubation-application__field--half" : ""}`}
-              >
-                <label className="incubation-application__field">
-                  <span>{field.label}</span>
-                  <input
-                    name={`field-${index}`}
-                    type="text"
-                    placeholder={field.placeholder}
-                    className={errors[`field-${index}`] ? "input-invalid" : ""}
-                    onInput={(e) => {
-                      const target = e.target as HTMLInputElement;
-                      const key = field.label.toLowerCase();
-                      if (key.includes("phone")) {
-                        target.value = sanitizePhoneInput(target.value);
-                      }
-                    }}
-                  />
-                  {errors[`field-${index}`] && (
-                    <span className="field-error">{errors[`field-${index}`]}</span>
-                  )}
-                </label>
-              </div>
-            ))}
+            {applicationFields.map((field, index) => {
+              const inputType = resolveFieldInputType(field);
+              const options = resolveFieldOptions(field);
+              const invalidClass = errors[`field-${index}`] ? "input-invalid" : "";
+
+              return (
+                <div
+                  key={`${field.label}-${index}`}
+                  className={`incubation-application__field-wrapper ${index < 2 ? "incubation-application__field--half" : ""}`}
+                >
+                  <label className="incubation-application__field">
+                    <span>{field.label}</span>
+                    {inputType === "select" ? (
+                      <select
+                        name={`field-${index}`}
+                        className={`incubation-application__select ${invalidClass}`}
+                        defaultValue=""
+                      >
+                        <option value="">{field.placeholder || "Select requirement type"}</option>
+                        {options.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        name={`field-${index}`}
+                        type={inputType === "email" ? "email" : "text"}
+                        placeholder={field.placeholder}
+                        className={invalidClass}
+                        onInput={(e) => {
+                          const target = e.target as HTMLInputElement;
+                          const key = field.label.toLowerCase();
+                          if (key.includes("phone")) {
+                            target.value = sanitizePhoneInput(target.value);
+                          }
+                        }}
+                      />
+                    )}
+                    {errors[`field-${index}`] && (
+                      <span className="field-error">{errors[`field-${index}`]}</span>
+                    )}
+                  </label>
+                </div>
+              );
+            })}
           </div>
           <button
             type="submit"
@@ -252,7 +303,7 @@ export default function IncubationPageSection({ content }: { content: Incubation
               "Our team typically responds within 5-7 business days for initial screening."}
           </p>
           {message ? (
-            <p className={status === "ok" ? "contact-form__ok" : "contact-form__err"}>
+            <p className={status === "ok" ? "contact-form__ok" : "contact-form__err"} role="status">
               {message}
             </p>
           ) : null}
@@ -261,4 +312,3 @@ export default function IncubationPageSection({ content }: { content: Incubation
     </section>
   );
 }
-
