@@ -11,6 +11,7 @@ import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
 import ImageUploadField from "@/components/admin/ImageUploadField";
 import SectionSaveFooter from "@/components/admin/SectionSaveFooter";
 import IconPicker from "./IconPicker";
+import ContactIconPicker from "./ContactIconPicker";
 
 type SectionRow = {
   id: string;
@@ -107,8 +108,12 @@ function getFieldHintFromLabel(labelText: string) {
   return "Enter a clear value that matches this field's purpose.";
 }
 
-function useAutoFieldHints(formRef: RefObject<HTMLFormElement | null>) {
+function useAutoFieldHints(
+  formRef: RefObject<HTMLFormElement | null>,
+  disabled = false,
+) {
   useEffect(() => {
+    if (disabled) return;
     const formEl = formRef.current;
     if (!formEl) return;
 
@@ -148,12 +153,15 @@ function useAutoFieldHints(formRef: RefObject<HTMLFormElement | null>) {
     const observer = new MutationObserver(() => applyHints());
     observer.observe(formEl, { childList: true, subtree: true });
     return () => observer.disconnect();
-  }, [formRef]);
+  }, [formRef, disabled]);
 }
 
-function SectionForm(props: FormHTMLAttributes<HTMLFormElement>) {
+function SectionForm({
+  disableAutoHints = false,
+  ...props
+}: FormHTMLAttributes<HTMLFormElement> & { disableAutoHints?: boolean }) {
   const formRef = useRef<HTMLFormElement>(null);
-  useAutoFieldHints(formRef);
+  useAutoFieldHints(formRef, disableAutoHints);
   return <form ref={formRef} {...props} />;
 }
 
@@ -207,7 +215,7 @@ export function IntroSectionForm({
         .split("\n")
         .map((line) => line.trim())
         .filter(Boolean),
-      description: values.description,
+      description: values.description.replace(/\s+/g, " ").trim(),
       highlights: [],
       image: values.image,
       more: "",
@@ -581,7 +589,7 @@ export function ServicesAccordionSectionForm({
         title: card.title,
         description: card.description,
         category: card.category,
-        icon: card.icon || undefined,
+        icon: card.icon?.trim() ?? "",
         iconImage: card.iconImage,
         points: card.pointsLines
           .split("\n")
@@ -2155,8 +2163,6 @@ type IncubationFormValues = {
   heroDescription: string;
   primaryActionLabel: string;
   primaryActionHref: string;
-  secondaryActionLabel: string;
-  secondaryActionHref: string;
   roadmapTitle: string;
   roadmapSubtitle: string;
   roadmapItems: IncubationRoadmapItemFormValue[];
@@ -2170,12 +2176,6 @@ type IncubationFormValues = {
   applicationFields: IncubationApplicationFieldFormValue[];
   applicationSubmitLabel: string;
   applicationNote: string;
-  title: string;
-  description: string;
-  steps: IncubationStepFormValue[];
-  image: string;
-  statValue: string;
-  statLabel: string;
 };
 
 function toIncubationDefaultValues(
@@ -2192,7 +2192,6 @@ function toIncubationDefaultValues(
     ? (data.applicationFields as Record<string, unknown>[])
     : [];
   const primaryAction = (data.primaryAction as Record<string, unknown>) ?? {};
-  const secondaryAction = (data.secondaryAction as Record<string, unknown>) ?? {};
   const portfolioAction = (data.portfolioAction as Record<string, unknown>) ?? {};
 
   const defaultRoadmapItems =
@@ -2213,8 +2212,6 @@ function toIncubationDefaultValues(
     heroDescription: (data.heroDescription as string) ?? (data.description as string) ?? "",
     primaryActionLabel: (primaryAction.label as string) ?? "",
     primaryActionHref: (primaryAction.href as string) ?? "",
-    secondaryActionLabel: (secondaryAction.label as string) ?? "",
-    secondaryActionHref: (secondaryAction.href as string) ?? "",
     roadmapTitle: (data.roadmapTitle as string) ?? "The Incubation Roadmap",
     roadmapSubtitle:
       (data.roadmapSubtitle as string) ?? "A structured transition from idea to global scale.",
@@ -2299,23 +2296,6 @@ function toIncubationDefaultValues(
     applicationNote:
       (data.applicationNote as string) ??
       "Our team typically responds within 5-7 business days for initial screening.",
-    title: (data.title as string) ?? "",
-    description: (data.description as string) ?? "",
-    steps:
-      rawSteps.length > 0
-        ? rawSteps.map((step, index) => ({
-            number: typeof step.number === "number" ? step.number : index + 1,
-            title: (step.title as string) ?? "",
-            description: (step.description as string) ?? "",
-          }))
-        : [
-            { number: 1, title: "", description: "" },
-            { number: 2, title: "", description: "" },
-            { number: 3, title: "", description: "" },
-          ],
-    image: (data.image as string) ?? "",
-    statValue: ((data.stat as Record<string, unknown>)?.value as string) ?? "",
-    statLabel: ((data.stat as Record<string, unknown>)?.label as string) ?? "",
   };
 }
 
@@ -2337,7 +2317,6 @@ export function IncubationSectionForm({
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<IncubationFormValues>({ defaultValues });
-  const image = useWatch({ control, name: "image" });
   const roadmapItems = useWatch({ control, name: "roadmapItems" });
   const portfolioCards = useWatch({ control, name: "portfolioCards" });
 
@@ -2346,6 +2325,18 @@ export function IncubationSectionForm({
       .split("\n")
       .map((line) => line.trim())
       .filter(Boolean);
+    const roadmapItemsSaved = values.roadmapItems.map((item) => ({
+      title: item.title,
+      description: item.description,
+      points: item.pointsLines
+        .split("\n")
+        .map((line) => line.trim())
+        .filter(Boolean),
+      image: item.image,
+    }));
+    const existingSecondaryAction =
+      (section.data.secondaryAction as Record<string, unknown> | undefined) ?? {};
+    const existingStat = (section.data.stat as Record<string, unknown> | undefined) ?? {};
     onSave({
       badge: values.badge,
       heroTitleLines,
@@ -2355,20 +2346,12 @@ export function IncubationSectionForm({
         href: values.primaryActionHref,
       },
       secondaryAction: {
-        label: values.secondaryActionLabel,
-        href: values.secondaryActionHref,
+        label: (existingSecondaryAction.label as string) ?? "",
+        href: (existingSecondaryAction.href as string) ?? "",
       },
       roadmapTitle: values.roadmapTitle,
       roadmapSubtitle: values.roadmapSubtitle,
-      roadmapItems: values.roadmapItems.map((item) => ({
-        title: item.title,
-        description: item.description,
-        points: item.pointsLines
-          .split("\n")
-          .map((line) => line.trim())
-          .filter(Boolean),
-        image: item.image,
-      })),
+      roadmapItems: roadmapItemsSaved,
       portfolioTitle: values.portfolioTitle,
       portfolioDescription: values.portfolioDescription,
       portfolioAction: {
@@ -2402,17 +2385,19 @@ export function IncubationSectionForm({
         })),
       applicationSubmitLabel: values.applicationSubmitLabel,
       applicationNote: values.applicationNote,
-      title: values.title,
-      description: values.description,
-      steps: values.steps.map((step, index) => ({
-        number: step.number ?? index + 1,
-        title: step.title,
-        description: step.description,
+      title: heroTitleLines.join("\n"),
+      description: values.heroDescription,
+      steps: roadmapItemsSaved.map((item, index) => ({
+        number: index + 1,
+        title: item.title,
+        description: item.description,
       })),
-      image: values.image,
+      image:
+        roadmapItemsSaved.find((item) => item.image.trim().length > 0)?.image ??
+        ((section.data.image as string) ?? ""),
       stat: {
-        value: values.statValue,
-        label: values.statLabel,
+        value: (existingStat.value as string) ?? "",
+        label: (existingStat.label as string) ?? "",
       },
     });
   }
@@ -2420,6 +2405,7 @@ export function IncubationSectionForm({
   return (
     <SectionForm
       className="admin-form admin-section-form"
+      disableAutoHints
       onSubmit={handleSubmit(handleValid)}
       style={{
         marginBottom: 24,
@@ -2453,14 +2439,6 @@ export function IncubationSectionForm({
         <label>
           Primary action href
           <input {...register("primaryActionHref", { required: "Primary action href is required" })} />
-        </label>
-        <label>
-          Secondary action label
-          <input {...register("secondaryActionLabel", { required: "Secondary action label is required" })} />
-        </label>
-        <label>
-          Secondary action href
-          <input {...register("secondaryActionHref", { required: "Secondary action href is required" })} />
         </label>
       </div>
 
@@ -2622,69 +2600,6 @@ export function IncubationSectionForm({
           <input {...register("applicationNote", { required: "Bottom note is required" })} />
         </label>
       </div>
-
-      <label>
-        Title
-        <input
-          {...register("title", { required: "Title is required" })}
-          placeholder="From Idea to Global Scale"
-        />
-        {errors.title ? (
-          <p className="admin-field-error">{errors.title.message}</p>
-        ) : null}
-      </label>
-
-      <label>
-        Description
-        <textarea
-          rows={4}
-          {...register("description", {
-            required: "Description is required",
-          })}
-          placeholder="Our Incubation Centre provides more than just desk space..."
-        />
-        {errors.description ? (
-          <p className="admin-field-error">{errors.description.message}</p>
-        ) : null}
-      </label>
-
-      <input
-        type="hidden"
-        {...register("image", { required: "Image is required" })}
-      />
-      <ImageUploadField
-        label="Image URL"
-        value={image}
-        onChange={(value) =>
-          setValue("image", value, { shouldDirty: true, shouldValidate: true })
-        }
-        folder={`sections/${section.type}`}
-      />
-      {errors.image ? (
-        <p className="admin-field-error">{errors.image.message}</p>
-      ) : null}
-
-      <label>
-        Stat value
-        <input
-          {...register("statValue", { required: "Stat value is required" })}
-          placeholder="50+"
-        />
-        {errors.statValue ? (
-          <p className="admin-field-error">{errors.statValue.message}</p>
-        ) : null}
-      </label>
-
-      <label>
-        Stat label
-        <input
-          {...register("statLabel", { required: "Stat label is required" })}
-          placeholder="Startups Accelerated"
-        />
-        {errors.statLabel ? (
-          <p className="admin-field-error">{errors.statLabel.message}</p>
-        ) : null}
-      </label>
 
       <SectionSaveFooter
         isSubmitting={isSubmitting}
@@ -3792,7 +3707,7 @@ function toContactInquiryDefaultValues(
     phoneLabel: (formFields.phoneLabel as string) ?? "Phone Number",
     phonePlaceholder: (formFields.phonePlaceholder as string) ?? "+971",
     interestLabel: (formFields.interestLabel as string) ?? "Primary Interest",
-    interestPlaceholder: (formFields.interestPlaceholder as string) ?? "Select a service",
+    interestPlaceholder: (formFields.interestPlaceholder as string) ?? "Select primary interest",
     messageLabel: (formFields.messageLabel as string) ?? "Your Message",
     messagePlaceholder:
       (formFields.messagePlaceholder as string) ?? "How can we help you?",
@@ -3936,21 +3851,6 @@ export function ContactInquirySectionForm({
       </label>
 
       <label>
-        Inquiry options (one per line)
-        <textarea
-          rows={5}
-          {...register("inquiryOptionsText", {
-            required: "At least one option is required",
-          })}
-        />
-        {errors.inquiryOptionsText ? (
-          <p className="admin-field-error">
-            {errors.inquiryOptionsText.message}
-          </p>
-        ) : null}
-      </label>
-
-      <label>
         Office section heading
         <input
           {...register("officeHeading", { required: "Heading is required" })}
@@ -3988,17 +3888,18 @@ export function ContactInquirySectionForm({
               />
             </label>
             <label>
-              choose an Icon
+              Icon
               <Controller
                 control={control}
                 name={`officeItems.${index}.icon`}
                 render={({ field }) => (
-                  <IconPicker
+                  <ContactIconPicker
                     value={typeof field.value === "string" ? field.value : ""}
                     onChange={(val) => field.onChange(val)}
                   />
                 )}
               />
+              <FieldHint>Use Location, Phone, or Email for contact details — same icons as the live contact page.</FieldHint>
             </label>
             <button
               type="button"
@@ -4068,6 +3969,21 @@ export function ContactInquirySectionForm({
 
       <div className="admin-section-group">
         <h4>Form field labels and placeholders</h4>
+        <label>
+          Primary interest options (one per line)
+          <textarea
+            rows={5}
+            {...register("inquiryOptionsText", {
+              required: "At least one primary interest option is required",
+            })}
+          />
+          <FieldHint>These appear in the Primary Interest dropdown on the contact page.</FieldHint>
+          {errors.inquiryOptionsText ? (
+            <p className="admin-field-error">
+              {errors.inquiryOptionsText.message}
+            </p>
+          ) : null}
+        </label>
         <label>Department section heading<input {...register("departmentHeading", { required: true })} /></label>
         <label>Full name label<input {...register("fullNameLabel", { required: true })} /></label>
         <label>Full name placeholder<input {...register("fullNamePlaceholder", { required: true })} /></label>
@@ -4311,7 +4227,6 @@ function toAboutIntroDefaultValues(
 }
 
 type CoursesCatalogCourseFormValue = {
-  badge: string;
   category: string;
   level: string;
   title: string;
@@ -4352,9 +4267,8 @@ function toCoursesCatalogDefaultValues(
     courses:
       rawCourses.length > 0
         ? rawCourses.map((course) => ({
-            badge: (course.badge as string) ?? "",
             category: (course.category as string) ?? "",
-            level: (course.level as string) ?? "",
+            level: ((course.level as string) ?? (course.badge as string) ?? "").trim(),
             title: (course.title as string) ?? "",
             description: (course.description as string) ?? "",
             skillsLines: Array.isArray(course.skills)
@@ -4365,7 +4279,6 @@ function toCoursesCatalogDefaultValues(
           }))
         : [
             {
-              badge: "",
               category: "",
               level: "",
               title: "",
@@ -4417,7 +4330,7 @@ export function CoursesCatalogSectionForm({
         .map((x) => x.trim())
         .filter(Boolean),
       courses: values.courses.map((course) => ({
-        badge: course.badge,
+        badge: course.level.trim(),
         category: course.category,
         level: course.level,
         title: course.title,
@@ -4472,16 +4385,12 @@ export function CoursesCatalogSectionForm({
         {fields.map((field, index) => (
           <div key={field.id} className="admin-section-card">
             <label>
-              Badge
-              <input {...register(`courses.${index}.badge`, { required: true })} />
+              Level (shown on card badge)
+              <input {...register(`courses.${index}.level`, { required: true })} />
             </label>
             <label>
               Category
               <input {...register(`courses.${index}.category`, { required: true })} />
-            </label>
-            <label>
-              Level
-              <input {...register(`courses.${index}.level`, { required: true })} />
             </label>
             <label>
               Title
@@ -4521,7 +4430,6 @@ export function CoursesCatalogSectionForm({
           className="admin-button-secondary"
           onClick={() =>
             append({
-              badge: "",
               category: "",
               level: "",
               title: "",

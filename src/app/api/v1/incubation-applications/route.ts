@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { jsonData, jsonError } from "@/lib/api-response";
+import { validateIncubationField } from "@/lib/form-validation";
 import { connectMongo } from "@/lib/mongoose";
 import IncubationApplication from "@/models/IncubationApplication";
 
@@ -26,26 +27,38 @@ export async function POST(request: Request) {
       return jsonError("validation_error", "Invalid form data", 422, parsed.error.flatten());
     }
 
-    const hasValue = parsed.data.fields.some((field) => field.value.trim().length > 0);
-    if (!hasValue) {
-      return jsonError("validation_error", "Please complete the application form", 422);
+    const normalizedFields = parsed.data.fields.map((field) => ({
+      label: field.label.trim(),
+      value: field.value.trim(),
+    }));
+
+    const fieldErrors = normalizedFields
+      .map((field, index) => ({
+        index,
+        error: validateIncubationField(field.label, field.value),
+      }))
+      .filter((item): item is { index: number; error: string } => item.error !== null);
+
+    if (fieldErrors.length > 0) {
+      return jsonError("validation_error", fieldErrors[0].error, 422, {
+        fieldErrors: Object.fromEntries(
+          fieldErrors.map((item) => [`field-${item.index}`, item.error]),
+        ),
+      });
     }
 
     await connectMongo();
     await IncubationApplication.create({
-      fields: parsed.data.fields.map((field) => ({
-        label: field.label.trim(),
-        value: field.value.trim(),
-      })),
+      fields: normalizedFields,
     });
 
     return jsonData({ received: true });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Incubation application error:", err);
     return jsonError(
       "internal_error",
       "Failed to submit application. This may be due to database limits (500/500 collections used). Please check your MongoDB Atlas dashboard.",
-      500
+      500,
     );
   }
 }

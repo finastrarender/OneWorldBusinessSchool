@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { z } from "zod";
+import { sanitizePhoneInput, validateIncubationFields } from "@/lib/form-validation";
 import type { incubationDataSchema } from "@/schemas/sections";
 
 type IncubationContent = z.infer<typeof incubationDataSchema>;
@@ -52,23 +53,16 @@ export default function IncubationPageSection({ content }: { content: Incubation
     const form = e.currentTarget;
     const fd = new FormData(form);
     
-    // Client-side validation
-    const newErrors: Record<string, string> = {};
-    const fields = applicationFields.map((field, index) => {
-      const val = String(fd.get(`field-${index}`) ?? "").trim();
-      if (!val) {
-        newErrors[`field-${index}`] = `${field.label} is required`;
-      }
-      return {
-        label: field.label,
-        value: val,
-      };
-    });
+    const fields = applicationFields.map((field, index) => ({
+      label: field.label,
+      value: String(fd.get(`field-${index}`) ?? ""),
+    }));
 
+    const newErrors = validateIncubationFields(fields);
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      setStatus("err");
-      setMessage("Please fill in all required fields.");
+      setStatus("idle");
+      setMessage("Please correct the errors below.");
       return;
     }
 
@@ -76,7 +70,12 @@ export default function IncubationPageSection({ content }: { content: Incubation
       const res = await fetch("/api/v1/incubation-applications", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fields }),
+        body: JSON.stringify({
+          fields: fields.map((field) => ({
+            label: field.label,
+            value: field.value.trim(),
+          })),
+        }),
       });
       const json = await res.json().catch(() => null);
       if (!res.ok) {
@@ -210,7 +209,7 @@ export default function IncubationPageSection({ content }: { content: Incubation
               "We are looking for bold founders solving hard problems. Our next cohort application window is now open. Apply today and get access to the ecosystem you need to win."}
           </p>
         </div>
-        <form className="incubation-application__form" onSubmit={onApplicationSubmit}>
+        <form className="incubation-application__form" onSubmit={onApplicationSubmit} noValidate>
           <div className="incubation-application__grid">
             {applicationFields.map((field, index) => (
               <div
@@ -224,6 +223,13 @@ export default function IncubationPageSection({ content }: { content: Incubation
                     type="text"
                     placeholder={field.placeholder}
                     className={errors[`field-${index}`] ? "input-invalid" : ""}
+                    onInput={(e) => {
+                      const target = e.target as HTMLInputElement;
+                      const key = field.label.toLowerCase();
+                      if (key.includes("phone")) {
+                        target.value = sanitizePhoneInput(target.value);
+                      }
+                    }}
                   />
                   {errors[`field-${index}`] && (
                     <span className="field-error">{errors[`field-${index}`]}</span>

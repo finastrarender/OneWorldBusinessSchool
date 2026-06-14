@@ -2,19 +2,27 @@
 
 /* eslint-disable @next/next/no-img-element */
 import type { z } from "zod";
+import type { ElementType } from "react";
 import { useState } from "react";
+import * as LucideIcons from "lucide-react";
 import type { servicesAccordionDataSchema } from "@/schemas/sections";
 import SimpleIcon from "../SimpleIcon";
 
 type ServicesAccordionContent = z.infer<typeof servicesAccordionDataSchema>;
 
+function resolveAccordionIcon(name: string | undefined): ElementType | null {
+  const trimmed = name?.trim() ?? "";
+  if (trimmed && /^[A-Z]/.test(trimmed)) {
+    const LucideIcon = LucideIcons[trimmed as keyof typeof LucideIcons] as ElementType | undefined;
+    if (LucideIcon) return LucideIcon;
+  }
+  return null;
+}
+
 export default function ServicesAccordionSection({ content }: { content: ServicesAccordionContent }) {
   const [openIndex, setOpenIndex] = useState(-1);
 
-  const getIconName = (cardTitle: string, explicitIcon?: string) => {
-    if (explicitIcon && explicitIcon.trim().length > 0) {
-      return explicitIcon;
-    }
+  const getIconName = (cardTitle: string) => {
     const lower = cardTitle.toLowerCase();
     if (lower.includes("management")) return "trading";
     if (lower.includes("research")) return "innovation";
@@ -29,6 +37,9 @@ export default function ServicesAccordionSection({ content }: { content: Service
         <div className="services-accordion-page__list">
           {content.cards.map((card, index) => {
             const isOpen = openIndex === index;
+            const fallbackIcon = getIconName(card.title);
+            const iconName = card.icon?.trim() || fallbackIcon;
+            const LucideIcon = resolveAccordionIcon(card.icon);
             return (
               <article key={card.title} className={`services-accordion-page__item${isOpen ? " is-open" : ""}`}>
                 <button
@@ -39,10 +50,11 @@ export default function ServicesAccordionSection({ content }: { content: Service
                 >
                   <span className="services-accordion-page__lead">
                     <span className="services-accordion-page__icon-wrap">
-                      <SimpleIcon
-                        name={getIconName(card.title, card.icon)}
-                        className="services-accordion-page__icon"
-                      />
+                      {LucideIcon ? (
+                        <LucideIcon className="services-accordion-page__icon" aria-hidden="true" />
+                      ) : (
+                        <SimpleIcon name={iconName} className="services-accordion-page__icon" />
+                      )}
                     </span>
                     <span className="services-accordion-page__title">{card.title}</span>
                   </span>

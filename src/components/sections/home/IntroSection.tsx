@@ -21,7 +21,9 @@ export default function IntroSection({
               <span key={line}>{line}</span>
             ))}
           </h2>
-          <p className="intro-section__description">{content.description}</p>
+          <p className="intro-section__description">
+            {content.description.replace(/\s+/g, " ").trim()}
+          </p>
         </div>
         <div className="intro-section__media">
           <div className="intro-section__media-frame">

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { jsonData, jsonError } from "@/lib/api-response";
+import { enrollNowFormSchema } from "@/lib/form-validation";
 import { connectMongo } from "@/lib/mongoose";
 import EnrollNowSubmission from "@/models/EnrollNowSubmission";
 
@@ -8,15 +9,8 @@ const customFieldSchema = z.object({
   value: z.string().max(2000).optional().default(""),
 });
 
-const bodySchema = z.object({
-  fullName: z.string().min(1).max(200),
-  phone: z.string().regex(/^[0-9]+$/, "Phone number must contain only numbers").min(10, "Phone number must be at least 10 digits"),
-  email: z.string().email().max(320),
-  city: z.string().max(200).optional().default(""),
-  experience: z.string().max(200).optional().default(""),
-  message: z.string().max(8000).optional().default(""),
+const bodySchema = enrollNowFormSchema.extend({
   customFields: z.array(customFieldSchema).max(20).optional().default([]),
-  acceptedTerms: z.boolean().optional().default(false),
   marketingConsent: z.boolean().optional().default(false),
 });
 

@@ -1,20 +1,16 @@
 "use client";
  
 import React, { useState } from "react";
-import { z } from "zod";
+import type { z } from "zod";
+import {
+  contactInquiryFormSchema,
+  sanitizePhoneInput,
+  zodErrorsToRecord,
+} from "@/lib/form-validation";
 import type { contactInquiryDataSchema } from "@/schemas/sections";
 import SimpleIcon from "../SimpleIcon";
- 
+
 type ContactInquiryContent = z.infer<typeof contactInquiryDataSchema>;
- 
-const contactFormSchema = z.object({
-  name: z.string().min(2, "Full name is required"),
-  email: z.string().email("Please enter a valid work email address"),
-  phone: z.string().regex(/^[0-9]+$/, "Please enter a valid phone number (numbers only)").min(10, "Phone number must be at least 10 digits"),
-  company: z.string().min(2, "Organization/Company name is required"),
-  inquiryType: z.string().min(1, "Please select an interest"),
-  message: z.string().min(10, "Message must be at least 10 characters"),
-});
 
 export default function ContactInquirySection({ content }: { content: ContactInquiryContent }) {
   const [status, setStatus] = useState<"idle" | "loading" | "ok" | "err">("idle");
@@ -56,15 +52,9 @@ export default function ContactInquirySection({ content }: { content: ContactInq
       message: String(fd.get("message") ?? ""),
     };
 
-    const validation = contactFormSchema.safeParse(formData);
+    const validation = contactInquiryFormSchema.safeParse(formData);
     if (!validation.success) {
-      const newErrors: Record<string, string> = {};
-      validation.error.issues.forEach((err) => {
-        if (err.path[0]) {
-          newErrors[err.path[0].toString()] = err.message;
-        }
-      });
-      setErrors(newErrors);
+      setErrors(zodErrorsToRecord(validation.error));
       setStatus("idle");
       return;
     }
@@ -73,7 +63,7 @@ export default function ContactInquirySection({ content }: { content: ContactInq
       const res = await fetch("/api/v1/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(validation.data),
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -184,10 +174,10 @@ export default function ContactInquirySection({ content }: { content: ContactInq
                   name="phone"
                   type="text"
                   className={`contact-inquiry__input${errors.phone ? " input-invalid" : ""}`}
-                  placeholder={formFields.phonePlaceholder ?? "Numbers only"}
+                  placeholder={formFields.phonePlaceholder ?? "+971501234567"}
                   onInput={(e) => {
                     const target = e.target as HTMLInputElement;
-                    target.value = target.value.replace(/[^0-9]/g, "");
+                    target.value = sanitizePhoneInput(target.value);
                   }}
                 />
                 {errors.phone && <span className="field-error">{errors.phone}</span>}
@@ -201,7 +191,7 @@ export default function ContactInquirySection({ content }: { content: ContactInq
                 name="inquiryType"
                 className={`contact-inquiry__input contact-inquiry__select${errors.inquiryType ? " input-invalid" : ""}`}
               >
-                <option value="">{formFields.interestPlaceholder ?? "Select a service"}</option>
+                <option value="">{formFields.interestPlaceholder ?? "Select primary interest"}</option>
                 {content.inquiryOptions.map((option) => (
                   <option key={option} value={option}>
                     {option}

@@ -311,6 +311,8 @@ const coursesCatalogData = {
   courses: [
     {
       badge: "Advanced",
+      category: "Business Management",
+      level: "Advanced",
       title: "Executive Leadership & Strategic Management",
       description:
         "Master the complete life of modern corporate leadership and learn to drive organizational growth through strategy.",
@@ -320,6 +322,8 @@ const coursesCatalogData = {
     },
     {
       badge: "Intermediate",
+      category: "Entrepreneurship",
+      level: "Intermediate",
       title: "The Startup Catalyst: From Idea to Exit",
       description:
         "A comprehensive guide for entrepreneurs to validate business models, secure funding, and scale operations.",
@@ -328,7 +332,9 @@ const coursesCatalogData = {
       image: "/home/hero-bg.jpg",
     },
     {
-      badge: "Professional",
+      badge: "Advanced",
+      category: "Data Analytics",
+      level: "Advanced",
       title: "Certified Business Data Analyst",
       description:
         "Bridge the gap between raw data and business insights. Learn tools like SQL, Python, and Tableau for decision-making.",
@@ -338,6 +344,8 @@ const coursesCatalogData = {
     },
     {
       badge: "Beginner",
+      category: "Digital Marketing",
+      level: "Beginner",
       title: "Global Marketing & Brand Identity",
       description:
         "Learn how to create compelling brand stories and execute multi-channel marketing campaigns across diverse markets.",
@@ -500,12 +508,16 @@ const contactInquiryData = {
   formDescription: "Fill out the form below and our team will get back to you within 24-48 hours.",
   submitLabel: "Submit Inquiry",
   inquiryOptions: [
-    "Business Consulting",
-    "Company Formation",
-    "Trade Licensing",
-    "Tax Consultancy",
-    "Visa Services",
+    "Management & Strategic Consultancy",
+    "Research & Innovation",
+    "Membership Organizations",
+    "Manpower & Placement",
+    "Education & Training",
   ],
+  formFields: {
+    interestLabel: "Primary Interest",
+    interestPlaceholder: "Select primary interest",
+  },
   officeHeading: "Contact Details",
   officeItems: [
     {
@@ -591,11 +603,11 @@ async function main() {
 
   const passwordHash = await bcrypt.hash(process.env.ADMIN_PASSWORD ?? "AdminChangeMe!", 12);
   await User.findOneAndUpdate(
-    { email: "admin@owtc-fze.com" },
-    { $set: { email: "admin@owtc-fze.com", passwordHash } },
+    { email: "admin@owbs-fze.com" },
+    { $set: { email: "admin@owbs-fze.com", passwordHash } },
     { upsert: true },
   );
-  console.log("Admin user: admin@owtc-fze.com /", process.env.ADMIN_PASSWORD ?? "AdminChangeMe!");
+  console.log("Admin user: admin@owbs-fze.com /", process.env.ADMIN_PASSWORD ?? "AdminChangeMe!");
 
   await SiteGlobal.findOneAndUpdate(
     { key: "default" },

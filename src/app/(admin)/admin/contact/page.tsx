@@ -40,8 +40,8 @@ export default async function AdminContactPage() {
         <Link href="/contact">View contact page</Link>
       </nav>
       <div className="admin-card">
-        <h1 style={{ marginTop: 0 }}>Contact Inquiries</h1>
-        <p className="admin-muted">Submitted from the public contact page inquiry form.</p>
+        <h1 style={{ marginTop: 0 }}>Contact Submissions</h1>
+        <p className="admin-muted">Submitted from the public contact page form.</p>
 
         <div className="admin-section-group">
           {inquiries.map((inquiry) => (
@@ -58,7 +58,7 @@ export default async function AdminContactPage() {
                 <strong>Company:</strong> {inquiry.company || "-"}
               </p>
               <p>
-                <strong>Inquiry type:</strong> {inquiry.inquiryType || "-"}
+                <strong>Primary interest:</strong> {inquiry.inquiryType || "-"}
               </p>
               <p style={{ whiteSpace: "pre-wrap" }}>{inquiry.message}</p>
             </article>

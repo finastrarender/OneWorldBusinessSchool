@@ -1,19 +1,11 @@
 "use client";
- 
-import { useState } from "react";
-import { z } from "zod";
 
-const enrollmentSchema = z.object({
-  fullName: z.string().min(2, "Full name must be at least 2 characters"),
-  email: z.string().email("Please enter a valid email address"),
-  phone: z.string().regex(/^[0-9]+$/, "Phone number must contain only numbers").min(10, "Phone number must be at least 10 digits"),
-  city: z.string().min(1, "Please select a city"),
-  experience: z.string().min(1, "Please select your experience level"),
-  message: z.string().optional(),
-  acceptedTerms: z.boolean().refine((v) => v === true, {
-    message: "You must accept the terms and conditions",
-  }),
-});
+import { useState } from "react";
+import {
+  enrollNowFormSchema,
+  sanitizePhoneInput,
+  zodErrorsToRecord,
+} from "@/lib/form-validation";
  
 export type ApplyNowModalContent = {
   panelTitle: string;
@@ -69,15 +61,9 @@ export default function ApplyNowCard({ content }: { content: ApplyNowModalConten
       acceptedTerms: fd.get("acceptedTerms") === "on",
     };
 
-    const validation = enrollmentSchema.safeParse(formData);
+    const validation = enrollNowFormSchema.safeParse(formData);
     if (!validation.success) {
-      const newErrors: Record<string, string> = {};
-      validation.error.issues.forEach((err) => {
-        if (err.path[0]) {
-          newErrors[err.path[0].toString()] = err.message;
-        }
-      });
-      setErrors(newErrors);
+      setErrors(zodErrorsToRecord(validation.error));
       setStatus("idle");
       return;
     }
@@ -88,7 +74,7 @@ export default function ApplyNowCard({ content }: { content: ApplyNowModalConten
     }));
  
     const body = {
-      ...formData,
+      ...validation.data,
       customFields,
       marketingConsent: fd.get("marketingConsent") === "on",
     };
@@ -152,7 +138,7 @@ export default function ApplyNowCard({ content }: { content: ApplyNowModalConten
                 className={errors.phone ? "input-invalid" : ""}
                 onInput={(e) => {
                   const target = e.target as HTMLInputElement;
-                  target.value = target.value.replace(/[^0-9]/g, "");
+                  target.value = sanitizePhoneInput(target.value);
                 }}
               />
               {errors.phone && <span className="field-error">{errors.phone}</span>}
@@ -198,7 +184,13 @@ export default function ApplyNowCard({ content }: { content: ApplyNowModalConten
  
           <label>
             <span>{content.messageLabel}</span>
-            <textarea name="message" rows={4} placeholder={content.messagePlaceholder} />
+            <textarea
+              name="message"
+              rows={4}
+              placeholder={content.messagePlaceholder}
+              className={errors.message ? "input-invalid" : ""}
+            />
+            {errors.message && <span className="field-error">{errors.message}</span>}
           </label>
           {content.customFields.map((field, index) => (
             <label key={`${field.label}-${index}`}>

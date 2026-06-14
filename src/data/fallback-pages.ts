@@ -446,7 +446,7 @@ const coursesCatalogData = {
       image: "/home/hero-bg.jpg",
     },
     {
-      badge: "Professional",
+      badge: "Advanced",
       category: "Data Analytics",
       level: "Advanced",
       title: "Certified Business Data Analyst",
@@ -633,12 +633,16 @@ const contactInquiryData = {
   formDescription: "Fill out the form below and our team will get back to you within 24-48 hours.",
   submitLabel: "Submit Inquiry",
   inquiryOptions: [
-    "Business Consulting",
-    "Company Formation",
-    "Trade Licensing",
-    "Tax Consultancy",
-    "Visa Services",
+    "Management & Strategic Consultancy",
+    "Research & Innovation",
+    "Membership Organizations",
+    "Manpower & Placement",
+    "Education & Training",
   ],
+  formFields: {
+    interestLabel: "Primary Interest",
+    interestPlaceholder: "Select primary interest",
+  },
   officeHeading: "Contact Details",
   officeItems: [
     {

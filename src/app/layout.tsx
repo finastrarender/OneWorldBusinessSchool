@@ -4,7 +4,7 @@ import "../styles.css";
 export const metadata: Metadata = {
   title: {
     default: "One World Business School & Incubation Centre",
-    template: "%s | OWBS LLC",
+    template: "%s | OWBS FZE",
   },
   description:
     "One World Business School & Incubation Centre",

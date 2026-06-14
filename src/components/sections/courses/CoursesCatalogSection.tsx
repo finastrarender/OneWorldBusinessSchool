@@ -15,6 +15,10 @@ function resolveCourseImage(course: Record<string, unknown>) {
   return "/home/headquarters.png";
 }
 
+function getCourseLevelLabel(course: { level?: string; badge: string }) {
+  return (course.level?.trim() || course.badge.trim());
+}
+
 export default function CoursesCatalogSection({ content }: { content: CoursesCatalogContent }) {
   const allCategoryLabel = content.categories[0] ?? "All";
   const allLevelLabel = content.levels[0] ?? "All Levels";
@@ -39,7 +43,7 @@ export default function CoursesCatalogSection({ content }: { content: CoursesCat
 
     return content.courses.filter((course) => {
       const courseCategory = (course.category ?? "").trim();
-      const courseLevel = (course.level ?? course.badge ?? "").trim();
+      const courseLevel = getCourseLevelLabel(course);
       const categoryOk = selectedCategory === allCategoryLabel || courseCategory === selectedCategory;
       const levelOk = selectedLevel === allLevelLabel || courseLevel === selectedLevel;
       return categoryOk && levelOk && matchesDuration(course.weeks);
@@ -167,7 +171,7 @@ export default function CoursesCatalogSection({ content }: { content: CoursesCat
                         alt={course.title}
                         className="course-card__image"
                       />
-                      <span className="course-card__badge">{course.badge}</span>
+                      <span className="course-card__badge">{getCourseLevelLabel(course)}</span>
                     </div>
                     <div className="course-card__body">
                       <h3 className="course-card__title">{course.title}</h3>

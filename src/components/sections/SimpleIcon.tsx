@@ -1,3 +1,6 @@
+import type { ElementType } from "react";
+import * as LucideIcons from "lucide-react";
+
 type IconName =
   | "spark"
   | "check"
@@ -197,7 +200,12 @@ export default function SimpleIcon({
   />
 </svg>
       );
-    default:
+    default: {
+      const LucideIcon = LucideIcons[name as keyof typeof LucideIcons] as ElementType | undefined;
+      if (LucideIcon && /^[A-Z]/.test(name)) {
+        return <LucideIcon className={className} aria-hidden="true" />;
+      }
       return null;
+    }
   }
 }
