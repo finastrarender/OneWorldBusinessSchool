@@ -739,9 +739,10 @@ button {
 @media (max-width: 1024px) {
   .intro-section__content {
     grid-template-columns: 1fr;
-    gap: 48px;
+    gap: 36px;
     text-align: center;
-    padding-block: 80px;
+    padding-block: 64px;
+    padding-inline: 24px;
   }
 
   .intro-section__copy {
@@ -757,10 +758,15 @@ button {
   }
 
   .intro-section__description {
-    max-width: min(52ch, 100%);
-    margin-inline: auto;
+    max-width: 100%;
+    margin: 12px 0 0;
+    font-size: 0.96rem;
+    line-height: 1.52;
     text-align: left;
-    text-align-last: auto;
+    text-align-last: left;
+    hyphens: none;
+    -webkit-hyphens: none;
+    word-spacing: normal;
   }
 
   .intro-section__media {
@@ -782,12 +788,31 @@ button {
 
 @media (max-width: 768px) {
   .intro-section__content {
-    padding-block: 60px;
-    gap: 32px;
+    padding-block: 48px;
+    padding-inline: 20px;
+    gap: 28px;
+  }
+
+  .intro-section__copy {
+    align-items: stretch;
+    text-align: left;
   }
 
   .intro-section__title {
     font-size: clamp(1.75rem, 5vw, 2.25rem);
+    text-align: left;
+  }
+
+  .intro-section__description {
+    max-width: 100%;
+    margin: 10px 0 0;
+    font-size: 0.94rem;
+    line-height: 1.5;
+    text-align: left;
+    text-align-last: left;
+    hyphens: none;
+    -webkit-hyphens: none;
+    word-spacing: normal;
   }
 
   .intro-section__accent {
@@ -3488,6 +3513,44 @@ button {
   border: 1px solid #d5dce4;
 }
 
+@media (max-width: 900px) {
+  .incubation-section {
+    padding: 48px 0 72px;
+  }
+
+  .incubation-hero {
+    text-align: left;
+    padding-inline: 0;
+  }
+
+  .incubation-hero__title {
+    font-size: clamp(1.9rem, 5.5vw, 2.75rem);
+    line-height: 1.16;
+  }
+
+  .incubation-hero__title span {
+    display: inline;
+  }
+
+  .incubation-hero__title span + span::before {
+    content: " ";
+  }
+
+  .incubation-hero__description {
+    margin-left: 0;
+    margin-right: 0;
+    max-width: 100%;
+  }
+
+  .incubation-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    max-width: none;
+    justify-content: flex-start;
+  }
+}
+
 .incubation-roadmap {
   margin-top: 88px;
   background: #f8fafc;
@@ -5186,13 +5249,6 @@ button {
     grid-template-columns: 1fr;
   }
 
-  .incubation-hero__actions {
-    display: grid;
-    width: 100%;
-    max-width: 360px;
-    margin: 26px auto 0;
-  }
-
   .incubation-roadmap__row {
     grid-template-columns: 1fr;
     gap: 12px;
@@ -5553,33 +5609,62 @@ button {
 
   .incubation-hero {
     text-align: left;
-    padding-inline: 4px;
+    padding-inline: 0;
+    max-width: 100%;
+  }
+
+  .incubation-hero__badge {
+    display: inline-block;
+    max-width: 100%;
+    font-size: 0.56rem;
+    letter-spacing: 0.08em;
+    line-height: 1.45;
+    padding: 6px 12px;
+    text-wrap: balance;
   }
 
   .incubation-hero__title {
-    font-size: clamp(1.85rem, 9.5vw, 2.6rem);
-    line-height: 1.12;
+    margin-top: 14px;
+    font-size: clamp(1.65rem, 7.2vw, 2.1rem);
+    line-height: 1.22;
+    letter-spacing: -0.01em;
+  }
+
+  .incubation-hero__title span {
+    display: inline;
+  }
+
+  .incubation-hero__title span + span::before {
+    content: " ";
   }
 
   .incubation-hero__description {
-    margin-left: 0;
-    margin-right: 0;
-    font-size: 0.94rem;
-    line-height: 1.55;
+    margin: 12px 0 0;
+    max-width: 100%;
+    font-size: 0.93rem;
+    line-height: 1.5;
+    color: #4f5d70;
   }
 
   .incubation-hero__actions {
     display: flex;
     flex-direction: column;
     width: 100%;
-    max-width: 340px;
+    max-width: none;
+    margin: 20px 0 0;
     gap: 10px;
-    align-items: flex-start;
+    align-items: stretch;
   }
 
   .incubation-hero__action {
     width: 100%;
     min-width: unset;
+    padding: 13px 20px;
+    font-size: 0.92rem;
+  }
+
+  .incubation-section {
+    padding: 36px 0 64px;
   }
 
   .incubation-roadmap {
@@ -6735,6 +6820,19 @@ button {
 
   .intro-section__title {
     font-size: 1.55rem !important;
+    text-align: left !important;
+  }
+
+  .intro-section__description {
+    font-size: 0.88rem !important;
+    line-height: 1.45 !important;
+    margin-top: 8px !important;
+    max-width: 100% !important;
+    text-align: left !important;
+    text-align-last: left !important;
+    hyphens: none !important;
+    -webkit-hyphens: none !important;
+    word-spacing: normal !important;
   }
 
   .why-section {
